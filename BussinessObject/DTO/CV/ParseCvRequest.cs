@@ -10,11 +10,7 @@ namespace BusinessObject.DTO.CV
 {
     public class ParseCvRequest
     {
-        [Required]
-        public IFormFile File { get; set; }
-
-        public bool IncludeMetadata { get; set; } = true;
-        public bool ExtractSections { get; set; } = true;
-        public string? ParseOptions { get; set; } // JSON string for additional options
+        public int UserId { get; set; }
+        public int CvId { get; set; }
     }
 }

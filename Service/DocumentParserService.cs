@@ -1,14 +1,10 @@
 ﻿using BusinessObject.DTO.CV;
 using DocumentFormat.OpenXml.Packaging;
-using iText.Commons.Utils;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.Extensions.Logging;
 using Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -94,13 +90,56 @@ namespace Service
                 result.Warnings.Add("Could not extract content from DOCX file");
             }
         }
+        public async Task<string> ExtractTextAsync(byte[] fileBytes, string filePath)
+        {
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
 
-        private async Task ParseTextAsync(string filePath, ParsedDocumentResult result)
+            if (ext == ".pdf")
+            {
+                return ExtractTextFromPdf(fileBytes);
+            }
+            else if (ext == ".docx")
+            {
+                return ExtractTextFromDocx(fileBytes);
+            }
+            else
+            {
+                throw new NotSupportedException("Unsupported file format");
+            }
+        }
+
+        private string ExtractTextFromPdf(byte[] fileBytes)
+        {
+            using var stream = new MemoryStream(fileBytes);
+            using var reader = new PdfReader(stream);
+            using var pdfDoc = new PdfDocument(reader);
+
+            var text = new StringBuilder();
+
+            for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++)
+            {
+                var page = pdfDoc.GetPage(i);
+                var extractedText = PdfTextExtractor.GetTextFromPage(page);
+                text.AppendLine(extractedText);
+            }
+
+            return text.ToString();
+        }
+
+        private string ExtractTextFromDocx(byte[] fileBytes)
+        {
+            using var stream = new MemoryStream(fileBytes);
+            using var wordDoc = WordprocessingDocument.Open(stream, false);
+            var body = wordDoc.MainDocumentPart?.Document?.Body;
+
+            return body?.InnerText ?? string.Empty;
+        }
+        public async Task ParseTextAsync(string filePath, ParsedDocumentResult result)
         {
             result.PlainTextContent = await File.ReadAllTextAsync(filePath);
         }
 
-        private void ExtractCvSections(ParsedDocumentResult result)
+        public void ExtractCvSections(ParsedDocumentResult result)
         {
             var content = result.PlainTextContent!;
             var sections = new List<string>();

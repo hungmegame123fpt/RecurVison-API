@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.DTO.CV;
+using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +15,9 @@ namespace Service.Interface
         Task<CVExportResponse> ExportCvAsync(CVExportRequest request);
         Task<List<string>> GetSupportedImportFormats();
         Task<List<string>> GetSupportedExportFormats();
-        Task<ParseCvResponse> ParseCvAsync(ParseCvRequest request);
+        Task<ParsedDocumentResult> ParseCvAsync(int userId, int cvId);
         Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true);
+        Task<List<CVDto>> GetAllCvAsync();
         Task<CvListResponse> GetUserCvsAsync(int userId);
         Task<CvDetailResponse> GetCvByIdAsync(int userId, int cvId);
         Task<DeleteResponse> DeleteCvAsync(int userId, int cvId);

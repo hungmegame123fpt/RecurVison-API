@@ -10,5 +10,8 @@ namespace Service.Interface
     public interface IDocumentParserService 
     {
         Task<ParsedDocumentResult> ParseDocumentAsync(string filePath, string fileExtension = null);
+        Task<string> ExtractTextAsync(byte[] fileBytes, string filePath);
+        void ExtractCvSections(ParsedDocumentResult result);
+        Task ParseTextAsync(string filePath, ParsedDocumentResult result);
     }
 }

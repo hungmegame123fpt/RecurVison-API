@@ -1,4 +1,5 @@
 ﻿using BusinessObject;
+using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
@@ -23,6 +24,36 @@ namespace Repository
             return await _context.Cvs
                 .Include(c => c.CvVersions)
                 .FirstOrDefaultAsync(c => c.CvId == cvId);
+        } 
+        public async Task<List<CVDto>> GetAllAsync()
+        {
+            return await _context.Cvs
+                .Include(c => c.CvVersions)
+                .Select(cv => new CVDto
+                {
+                    CvId = cv.CvId,
+                    UserId = cv.UserId,
+                    Title = cv.Title,
+                    CreatedAt = cv.UploadedAt,
+                    UpdatedAt = cv.LastModified,
+                    CurrentVersion = cv.CurrentVersion,
+                    TotalVersions = cv.CvVersions.Count,
+                    FilePath = cv.FilePath,
+                    LatestVersion = cv.CvVersions
+                            .OrderByDescending(v => v.VersionNumber)
+                            .FirstOrDefault() != null
+                            ? new CvVersionDto
+                            {
+                                VersionId = cv.CvVersions.OrderByDescending(v => v.VersionNumber).First().VersionId,
+                                VersionNumber = cv.CvVersions.OrderByDescending(v => v.VersionNumber).First().VersionNumber,
+                                FilePath = cv.CvVersions.OrderByDescending(v => v.VersionNumber).First().FilePath,
+                                ChangeSummary = cv.CvVersions.OrderByDescending(v => v.VersionNumber).First().ChangeSummary,
+                                CreatedAt = cv.CvVersions.OrderByDescending(v => v.VersionNumber).First().CreatedAt
+                            }
+                            : null
+                }).ToListAsync();
+
+
         }
 
         public async Task<Cv?> GetByUserIdAsync(int userId, int cvId)

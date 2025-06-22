@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTO.CV;
+using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Repository.Interface
 {
     public interface ICVRepository 
     {
+        Task<List<CVDto>> GetAllAsync();
         Task<Cv?> GetByIdAsync(int cvId);
         Task<Cv?> GetByUserIdAsync(int userId, int cvId);
         Task<List<Cv>> GetByUserIdAsync(int userId);

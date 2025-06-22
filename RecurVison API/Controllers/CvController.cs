@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.DTO.CV;
+using BusinessObject.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
@@ -72,6 +73,29 @@ namespace RecurVison_API.Controllers
             }
 
             return BadRequest(result);
+        }
+        [HttpPost("parse")]
+        [ProducesResponseType(typeof(ParsedDocumentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ParseCv([FromBody] ParseCvRequest request)
+        {
+            try
+            {
+                var result = await _cvService.ParseCvAsync(request.UserId, request.CvId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while parsing CV");
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+        [HttpGet("all")]
+        [ProducesResponseType(typeof(List<CVDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllCvs()
+        {
+            var cvs = await _cvService.GetAllCvAsync();
+            return Ok(cvs);
         }
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<CvListResponse>> GetUserCvs(int userId)

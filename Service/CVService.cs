@@ -35,7 +35,10 @@ namespace Service
             _documentParserService = documentParserService;
             _logger = logger;
         }
-
+        public async Task<List<CVDto>> GetAllCvAsync()
+        {
+            return await _cvRepository.GetAllAsync();
+        }
         public async Task<CVImportResponse> ImportCvAsync(CVImportRequest request)
         {
             string tempFilePath = null;
@@ -299,6 +302,7 @@ namespace Service
                     Cvs = cvs.Select(cv => new CVDto
                     {
                         CvId = cv.CvId,
+                        UserId = cv.UserId,
                         Title = cv.Title,
                         CreatedAt = cv.UploadedAt,
                         UpdatedAt = cv.LastModified,
@@ -465,9 +469,26 @@ namespace Service
             };
         }
 
-        public Task<ParseCvResponse> ParseCvAsync(ParseCvRequest request)
+        public async Task<ParsedDocumentResult> ParseCvAsync(int userId, int cvId)
         {
-            throw new NotImplementedException();
+            var cv = await _cvRepository.GetByUserIdAsync(userId, cvId);
+            if (cv == null)
+                throw new Exception("CV not found or access denied");
+
+            var fileBytes = await _fileStorageService.GetFileAsync(cv.FilePath); // FilePath is Cloudinary URL or ID
+            if (fileBytes == null)
+                throw new Exception("CV file not found in storage");
+
+            // Convert byte[] to plain text directly, based on file type
+            var plainText = await _documentParserService.ExtractTextAsync(fileBytes, cv.FilePath);
+
+            var result = new ParsedDocumentResult
+            {
+                PlainTextContent = plainText
+            };
+
+            _documentParserService.ExtractCvSections(result);
+            return result;
         }
 
         public Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true)
