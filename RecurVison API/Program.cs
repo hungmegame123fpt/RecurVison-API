@@ -111,8 +111,6 @@ namespace RecurVison_API
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();
