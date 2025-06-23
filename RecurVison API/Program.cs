@@ -72,6 +72,7 @@ namespace RecurVison_API
                 options.AddPolicy("AllowSpecificOrigin", policy =>
                 {
                     policy.WithOrigins("http://localhost:3000") // Adjust for your frontend
+                          .WithOrigins("https://recru-vision.vercel.app") // Adjust for your frontend
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
