@@ -21,5 +21,6 @@ namespace Service.Interface
         Task<CvListResponse> GetUserCvsAsync(int userId);
         Task<CvDetailResponse> GetCvByIdAsync(int userId, int cvId);
         Task<DeleteResponse> DeleteCvAsync(int userId, int cvId);
+        Task<byte[]> EditPdfAsync(byte[] originalPdf, string newText);
     }
 }

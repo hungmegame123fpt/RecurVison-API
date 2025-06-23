@@ -3,6 +3,7 @@ using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Service;
 using Service.Interface;
 
 namespace RecurVison_API.Controllers
@@ -12,12 +13,14 @@ namespace RecurVison_API.Controllers
     public class CvController : ControllerBase
     {
         private readonly ICVService _cvService;
+        private readonly IFileStorageService _storageService;
         private readonly ILogger<CvController> _logger;
 
-        public CvController(ICVService cvService, ILogger<CvController> logger)
+        public CvController(ICVService cvService, ILogger<CvController> logger, IFileStorageService storageService)
         {
             _cvService = cvService;
             _logger = logger;
+            _storageService = storageService;
         }
 
         [HttpPost("import")]
@@ -89,6 +92,19 @@ namespace RecurVison_API.Controllers
                 _logger.LogError(ex, "Error while parsing CV");
                 return BadRequest(new { Message = ex.Message });
             }
+        }
+        [HttpPost("edit")]
+        public async Task<IActionResult> EditPdf([FromBody] EditPdfRequest request, int userId)
+        {
+            // Get original CV from cloudinary/local storage
+            var cv = await _cvService.GetCvByIdAsync(userId,request.CvId);
+            var fileBytes = await _storageService.GetFileAsync(cv.Cv.FilePath);
+
+            if (fileBytes == null) return NotFound("Original CV not found.");
+
+            var updatedPdf = await _cvService.EditPdfAsync(fileBytes, request.NewText);
+
+            return File(updatedPdf, "application/pdf", "Edited_CV.pdf");
         }
         [HttpGet("all")]
         [ProducesResponseType(typeof(List<CVDto>), StatusCodes.Status200OK)]

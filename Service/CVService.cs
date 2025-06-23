@@ -1,6 +1,13 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
+using iText.IO.Font.Constants;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Repository.Interface;
@@ -11,7 +18,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 namespace Service
 {
     public class CVService : ICVService
@@ -491,6 +497,51 @@ namespace Service
             return result;
         }
 
+        public async Task<byte[]> EditPdfAsync(byte[] originalPdf, string newText)
+        {
+            if (originalPdf == null || originalPdf.Length == 0)
+                throw new ArgumentException("Original PDF data cannot be null or empty", nameof(originalPdf));
+
+            if (string.IsNullOrWhiteSpace(newText))
+                throw new ArgumentException("New text cannot be null or empty", nameof(newText));
+
+            using var inputStream = new MemoryStream(originalPdf);
+            using var outputStream = new MemoryStream();
+
+            try
+            {
+                using var reader = new PdfReader(inputStream);
+                var writerProps = new WriterProperties().SetFullCompressionMode(true);
+                using var writer = new PdfWriter(outputStream, writerProps);
+                using var pdfDoc = new PdfDocument(reader, writer);
+
+                // Check if PDF has pages
+                if (pdfDoc.GetNumberOfPages() == 0)
+                    throw new InvalidOperationException("PDF document has no pages");
+
+                var firstPage = pdfDoc.GetFirstPage();
+                var pageSize = firstPage.GetPageSize();
+
+                // Create font with error handling
+                var font = PdfFontFactory.CreateFont(StandardFonts.TIMES_ROMAN);
+
+                // Use PdfCanvas for more control over text positioning
+                var canvas = new PdfCanvas(firstPage);
+
+                // Set text properties
+                canvas.BeginText()
+                      .SetFontAndSize(font, 12)
+                      .SetTextMatrix(50, pageSize.GetHeight() - 50) // Position from top-left
+                      .ShowText(newText)
+                      .EndText();
+                pdfDoc.Close();
+                return outputStream.ToArray();
+        }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to edit PDF: {ex.Message}", ex);
+            }
+        }
         public Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true)
         {
             throw new NotImplementedException();
