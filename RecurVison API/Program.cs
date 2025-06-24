@@ -69,7 +69,7 @@ namespace RecurVison_API
             builder.Services.AddAuthorization();
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowSpecificOrigin", policy =>
+                options.AddPolicy("AllowAll", policy =>
                 {
                     policy.WithOrigins("http://localhost:3000", "https://recru-vision.vercel.app") // Adjust for your frontend
                           .AllowAnyHeader()
@@ -106,7 +106,7 @@ namespace RecurVison_API
                     c.RoutePrefix = string.Empty; // So Swagger UI loads at root
                 });
             }
-            app.UseCors("AllowSpecificOrigin");
+            app.UseCors("AllowAll");
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
