@@ -106,7 +106,7 @@ namespace RecurVison_API
                     c.RoutePrefix = string.Empty; // So Swagger UI loads at root
                 });
             }
-            app.UseCors();
+            app.UseCors("AllowSpecificOrigin");
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
