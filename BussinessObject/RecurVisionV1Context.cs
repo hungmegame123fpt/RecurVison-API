@@ -207,7 +207,7 @@ public partial class RecurVisionV1Context : DbContext
 
             entity.HasOne(d => d.Cv).WithMany(p => p.CvVersions)
                 .HasForeignKey(d => d.CvId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__CV_VERSIO__cv_id__09A971A2");
         });
 
@@ -383,6 +383,12 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.PlanName)
                 .HasMaxLength(255)
                 .HasColumnName("plan_name");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.UpdatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updated_at");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(18, 0)")
                 .HasColumnName("price");

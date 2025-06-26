@@ -9,7 +9,6 @@
   <ItemGroup>
     <Compile Remove="DocumentParserService - Copy.cs" />
     <Compile Remove="LocalFileService - Copy.cs" />
-    <Compile Remove="SubscriptionPlanService.cs" />
   </ItemGroup>
 
   <ItemGroup>

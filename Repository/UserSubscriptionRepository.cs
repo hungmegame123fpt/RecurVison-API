@@ -120,7 +120,7 @@ namespace Repository
         public async Task<List<UserSubscription>> GetSubscriptionsByStatusAsync(string status)
         {
             return await GetAllAsync(
-                filter: s => s.PaymentStatus == status,
+                filter: s => s.PaymentStatus.Contains(status),
                 includeProperties: "User,Plan"
             );
         }

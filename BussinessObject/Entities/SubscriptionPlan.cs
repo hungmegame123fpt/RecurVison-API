@@ -17,6 +17,8 @@ public partial class SubscriptionPlan
     public string? BillingCycle { get; set; }
 
     public string? Features { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public bool? IsActive { get; set; }
     [JsonIgnore]

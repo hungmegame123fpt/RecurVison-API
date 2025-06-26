@@ -402,7 +402,14 @@ namespace Service
                         Message = "CV not found or access denied"
                     };
                 }
-
+                if (!string.IsNullOrEmpty(cv.FilePath))
+                {
+                    var cloudinaryResult = await _fileStorageService.DeleteFileAsync(cv.FilePath);
+                    if (!cloudinaryResult)
+                    {
+                        _logger.LogWarning("Failed to delete CV file from Cloudinary for CV ID {CvId}", cvId);
+                    }
+                }
                 await _cvRepository.DeleteAsync(cvId);
 
                 return new DeleteResponse

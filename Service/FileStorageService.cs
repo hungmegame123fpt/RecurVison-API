@@ -215,14 +215,6 @@ namespace Service
                 // Join remaining segments to form public ID
                 var publicIdParts = pathSegments.Skip(startIndex);
                 var publicId = string.Join("/", publicIdParts);
-
-                // Remove file extension from the last part
-                var lastDotIndex = publicId.LastIndexOf('.');
-                if (lastDotIndex > 0)
-                {
-                    publicId = publicId.Substring(0, lastDotIndex);
-                }
-
                 return publicId;
             }
             catch (Exception ex)

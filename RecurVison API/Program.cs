@@ -77,6 +77,7 @@ namespace RecurVison_API
                           .AllowCredentials();
                 });
             });
+            builder.Services.AddAutoMapper(typeof(MappingConfig));
             builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
             builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -89,6 +90,9 @@ namespace RecurVison_API
             builder.Services.AddScoped<ICVRepository, CVRepository>();
             builder.Services.AddScoped<ICVService, CVService>();
             builder.Services.AddScoped<ISubscriptionPaymentService, SubscriptionPaymentService>();
+            builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
