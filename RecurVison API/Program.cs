@@ -93,6 +93,8 @@ namespace RecurVison_API
             builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
+            builder.Services.AddScoped<IInterviewQuestionService, InterviewQuestionService>();
+            builder.Services.AddScoped<IVirtualInterviewService, VirtualInterviewService>();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())

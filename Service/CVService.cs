@@ -22,7 +22,7 @@ namespace Service
 {
     public class CVService : ICVService
     {
-        private readonly ICVRepository _cvRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentParserService _documentParserService;
         private readonly ILogger<CVService> _logger;
@@ -31,19 +31,19 @@ namespace Service
         private readonly string[] _supportedExportFormats = { "pdf", "docx", "txt" };
 
         public CVService(
-            ICVRepository cvRepository,
+            IUnitOfWork unitOfWork,
             IFileStorageService fileStorageService,
             IDocumentParserService documentParserService,
             ILogger<CVService> logger)
         {
-            _cvRepository = cvRepository;
+            _unitOfWork = unitOfWork;
             _fileStorageService = fileStorageService;
             _documentParserService = documentParserService;
             _logger = logger;
         }
         public async Task<List<CVDto>> GetAllCvAsync()
         {
-            return await _cvRepository.GetAllAsync();
+            return await _unitOfWork.CVRepository.GetAllAsync();
         }
         public async Task<CVImportResponse> ImportCvAsync(CVImportRequest request)
         {
@@ -80,7 +80,7 @@ namespace Service
                 if (request.CreateNewVersion && request.ExistingCvId.HasValue)
                 {
                     // Create new version of existing CV
-                    cv = await _cvRepository.GetByUserIdAsync(request.UserId, request.ExistingCvId.Value);
+                    cv = await _unitOfWork.CVRepository.GetByUserIdAsync(request.UserId, request.ExistingCvId.Value);
                     if (cv == null)
                     {
                         return new CVImportResponse
@@ -90,7 +90,7 @@ namespace Service
                         };
                     }
 
-                    var latestVersion = await _cvRepository.GetLatestVersionAsync(cv.CvId);
+                    var latestVersion = await _unitOfWork.CVRepository.GetLatestVersionAsync(cv.CvId);
                     var newVersionNumber = (latestVersion?.VersionNumber ?? 0) + 1;
 
                     version = new CvVersion
@@ -101,11 +101,11 @@ namespace Service
                         ChangeSummary = "Imported new version"
                     };
 
-                    version = await _cvRepository.CreateVersionAsync(version);
-
+                    version = await _unitOfWork.CVRepository.CreateVersionAsync(version);
+                    cv.Title = request.Title;
                     cv.CurrentVersion = newVersionNumber;
                     cv.FilePath = filePath;
-                    cv = await _cvRepository.UpdateAsync(cv);
+                    cv = await _unitOfWork.CVRepository.UpdateAsync(cv);
                 }
                 else
                 {
@@ -117,7 +117,7 @@ namespace Service
                         FilePath = filePath
                     };
 
-                    cv = await _cvRepository.CreateAsync(cv);
+                    cv = await _unitOfWork.CVRepository.CreateAsync(cv);
 
                     // Create initial version
                     version = new CvVersion
@@ -128,7 +128,7 @@ namespace Service
                         ChangeSummary = "Initial import"
                     };
 
-                    version = await _cvRepository.CreateVersionAsync(version);
+                    version = await _unitOfWork.CVRepository.CreateVersionAsync(version);
                 }
 
                 var metadata = new CVMetadata
@@ -168,7 +168,7 @@ namespace Service
             try
             {
                 // Get CV
-                var cv = await _cvRepository.GetByUserIdAsync(request.UserId, request.CvId);
+                var cv = await _unitOfWork.CVRepository.GetByUserIdAsync(request.UserId, request.CvId);
                 if (cv == null)
                 {
                     return new CVExportResponse
@@ -299,7 +299,7 @@ namespace Service
         {
             try
             {
-                var cvs = await _cvRepository.GetByUserIdAsync(userId);
+                var cvs = await _unitOfWork.CVRepository.GetByUserIdAsync(userId);
 
                 return new CvListResponse
                 {
@@ -344,7 +344,7 @@ namespace Service
         {
             try
             {
-                var cv = await _cvRepository.GetByUserIdAsync(userId, cvId);
+                var cv = await _unitOfWork.CVRepository.GetByUserIdAsync(userId, cvId);
                 if (cv == null)
                 {
                     return new CvDetailResponse
@@ -393,7 +393,7 @@ namespace Service
         {
             try
             {
-                var cv = await _cvRepository.GetByUserIdAsync(userId, cvId);
+                var cv = await _unitOfWork.CVRepository.GetByUserIdAsync(userId, cvId);
                 if (cv == null)
                 {
                     return new DeleteResponse
@@ -410,7 +410,7 @@ namespace Service
                         _logger.LogWarning("Failed to delete CV file from Cloudinary for CV ID {CvId}", cvId);
                     }
                 }
-                await _cvRepository.DeleteAsync(cvId);
+                await _unitOfWork.CVRepository.DeleteAsync(cvId);
 
                 return new DeleteResponse
                 {
@@ -484,7 +484,7 @@ namespace Service
 
         public async Task<ParsedDocumentResult> ParseCvAsync(int userId, int cvId)
         {
-            var cv = await _cvRepository.GetByUserIdAsync(userId, cvId);
+            var cv = await _unitOfWork.CVRepository.GetByUserIdAsync(userId, cvId);
             if (cv == null)
                 throw new Exception("CV not found or access denied");
 
@@ -548,6 +548,12 @@ namespace Service
             {
                 throw new InvalidOperationException($"Failed to edit PDF: {ex.Message}", ex);
             }
+        }
+        public async Task<string?> CategorizeCvByFieldAsync(int cvId, string plainTextContent)
+        {
+             var fieldId = await _unitOfWork.CVRepository.CategorizeCvByFieldAsync(cvId, plainTextContent);
+            var result =  await _unitOfWork.JobFieldRepository.GetJobNameByIdAsync(fieldId);
+            return result;
         }
         public Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true)
         {

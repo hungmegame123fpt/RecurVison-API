@@ -49,7 +49,9 @@ public partial class RecurVisionV1Context : DbContext
     public virtual DbSet<UserSubscription> UserSubscriptions { get; set; }
 
     public virtual DbSet<VirtualInterview> VirtualInterviews { get; set; }
-
+    public DbSet<FieldCategory> FieldCategories { get; set; }
+    public DbSet<JobField> JobFields { get; set; }
+    public DbSet<UserFieldPreference> UserFieldPreferences { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=tcp:recruvisionserver.database.windows.net,1433;Initial Catalog=RecurVision_V1;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
@@ -113,6 +115,10 @@ public partial class RecurVisionV1Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CAREER_PL__user___1332DBDC");
+            entity.HasOne(e => e.TargetField)
+                  .WithMany()
+                  .HasForeignKey(e => e.TargetFieldId)
+                  .HasConstraintName("FK_CAREER_PLAN_FIELD");
         });
 
         modelBuilder.Entity<Cv>(entity =>
@@ -141,11 +147,16 @@ public partial class RecurVisionV1Context : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("uploaded_at");
             entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.FieldId).HasColumnName("field_id");
 
             entity.HasOne(d => d.User).WithMany(p => p.Cvs)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__CV__user_id__08B54D69");
+            entity.HasOne(e => e.TargetField)
+                 .WithMany()
+                 .HasForeignKey(e => e.FieldId)
+                 .HasConstraintName("FK_CV_FIELD");
         });
 
         modelBuilder.Entity<CvKeywordMatch>(entity =>
@@ -317,6 +328,10 @@ public partial class RecurVisionV1Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__JOB_POSTI__user___0A9D95DB");
+            entity.HasOne(e => e.JobField)
+                 .WithMany()
+                 .HasForeignKey(e => e.FieldId)
+                 .HasConstraintName("FK_JOB_POSTING_FIELD");
         });
 
         modelBuilder.Entity<Keyword>(entity =>
@@ -337,6 +352,11 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.Keyword1)
                 .HasMaxLength(255)
                 .HasColumnName("keyword");
+            entity.Property(e => e.FieldId).HasColumnName("field_id");
+            entity.HasOne(e => e.JobField)
+                  .WithMany()
+                  .HasForeignKey(e => e.FieldId)
+                  .HasConstraintName("FK_KEYWORD_FIELD");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -560,7 +580,65 @@ public partial class RecurVisionV1Context : DbContext
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__USER_SUBS__user___151B244E");
         });
+        modelBuilder.Entity<FieldCategory>(entity =>
+        {
+            entity.ToTable("FIELD_CATEGORY");
+            entity.HasKey(e => e.CategoryId);
+            entity.Property(e => e.CategoryName).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.IconPath).HasMaxLength(255);
+            entity.Property(e => e.IsDefault);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
+        });
 
+        modelBuilder.Entity<JobField>(entity =>
+        {
+            entity.ToTable("JOB_FIELD");
+            entity.HasKey(e => e.FieldId);
+            entity.Property(e => e.FieldId)
+               .ValueGeneratedOnAdd()
+               .HasColumnName("field_id");
+            entity.Property(e => e.FieldName).IsRequired().HasMaxLength(255).HasColumnName("field_name");
+            entity.Property(e => e.CommonSkills).HasColumnType("text");
+            entity.Property(e => e.TypicalKeywords).HasColumnType("text");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(e => e.Category)
+                  .WithMany(c => c.JobFields)
+                  .HasForeignKey(e => e.CategoryId)
+                  .HasConstraintName("FK_JOB_FIELD_CATEGORY");
+        });
+
+        modelBuilder.Entity<UserFieldPreference>(entity =>
+        {
+            entity.ToTable("USER_FIELD_PREFERENCE");
+            entity.HasKey(e => e.PreferenceId);
+            entity.Property(e => e.ExperienceLevel).HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("getdate()");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            entity.HasOne(e => e.JobField)
+                  .WithMany(f => f.UserFieldPreferences)
+                  .HasForeignKey(e => e.FieldId)
+                  .HasConstraintName("FK_USER_FIELD_PREF_FIELD");
+
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.UserFieldPreferences)
+                  .HasForeignKey(e => e.UserId)
+                  .HasConstraintName("FK_USER_FIELD_PREF_USER");
+
+            entity.HasIndex(e => new { e.UserId, e.FieldId }).IsUnique()
+                  .HasDatabaseName("UQ_USER_FIELD_PREFERENCE");
+
+            entity.HasCheckConstraint("CK_USER_FIELD_PREF_EXPERIENCE",
+                "[experience_level] IN ('entry', 'junior', 'mid', 'senior', 'lead', 'executive', 'director')");
+
+            entity.HasCheckConstraint("CK_USER_FIELD_PREF_PRIORITY",
+                "[priority_rank] >= 1 AND [priority_rank] <= 10");
+        });
         modelBuilder.Entity<VirtualInterview>(entity =>
         {
             entity.HasKey(e => e.InterviewId).HasName("PK__VIRTUAL___141E55527CDCF1E3");

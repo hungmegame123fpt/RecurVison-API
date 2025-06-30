@@ -20,5 +20,7 @@ namespace Repository.Interface
         Task<bool> ExistsAsync(int cvId);
         Task<CvVersion?> GetLatestVersionAsync(int cvId);
         Task<CvVersion> CreateVersionAsync(CvVersion version);
+        Task<int?> CategorizeCvByFieldAsync(int cvId, string plainTextContent);
+        Task MatchKeywordsAndSaveAsync(int cvId, string plainTextCv);
     }
 }

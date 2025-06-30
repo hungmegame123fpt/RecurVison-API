@@ -8,6 +8,7 @@ public partial class JobPosting
     public int JobId { get; set; }
 
     public int UserId { get; set; }
+    public int? FieldId { get; set; }
 
     public string? JobPosition { get; set; }
 
@@ -40,6 +41,7 @@ public partial class JobPosting
     public virtual ICollection<JobKeyword> JobKeywords { get; set; } = new List<JobKeyword>();
 
     public virtual User User { get; set; } = null!;
+    public virtual JobField JobField { get; set; } = new JobField();
 
     public virtual ICollection<VirtualInterview> VirtualInterviews { get; set; } = new List<VirtualInterview>();
 }

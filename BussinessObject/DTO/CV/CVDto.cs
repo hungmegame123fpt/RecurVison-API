@@ -16,6 +16,7 @@ namespace BusinessObject.DTO.CV
         public int? CurrentVersion { get; set; }
         public int TotalVersions { get; set; }
         public string FilePath { get; set; }
+        public int? FieldId { get; set; }
         public CvVersionDto LatestVersion { get; set; }
     }
 }

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using BusinessObject.Entities;
+using System.Linq.Expressions;
 
 namespace Service.Interface
 {
@@ -111,7 +113,11 @@ namespace Service.Interface
         {
             return await _userRepository.GetUserStatsAsync();
         }
-
+        public async Task<List<UserDto>> GetAllAsync(Expression<Func<User, bool>>? filter = null, string? includeProperties = null)
+        {
+            var users = await _userRepository.GetAllAsync(filter, includeProperties);
+            return _mapper.Map<List<UserDto>>(users);
+        }
         //public async Task<byte[]> ExportUsersAsync(string format = "csv")
         //{
         //    var users = await _userRepository.GetAllAsync();

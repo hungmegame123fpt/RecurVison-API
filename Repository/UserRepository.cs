@@ -21,7 +21,7 @@ namespace Repository
         {
             _context = context;
         }
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<User?> GetByIdAsync(int? id)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id && u.AccountStatus == "Active");
         }

@@ -12,6 +12,9 @@ public partial class Keyword
     public decimal? ImportanceScore { get; set; }
 
     public string? Category { get; set; }
+    public int? FieldId { get; set; }
+
+    public JobField JobField { get; set; } = new JobField();
 
     public virtual ICollection<CvKeywordMatch> CvKeywordMatches { get; set; } = new List<CvKeywordMatch>();
 

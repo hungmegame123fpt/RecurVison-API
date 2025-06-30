@@ -150,5 +150,12 @@ namespace RecurVison_API.Controllers
             var formats = await _cvService.GetSupportedExportFormats();
             return Ok(formats);
         }
+        
+        [HttpGet("JobField")]
+        public async Task<ActionResult<string?>> CategorizeCvByFieldAsync(int cvId, string plainTextContent)
+        {
+            var result = await _cvService.CategorizeCvByFieldAsync(cvId, plainTextContent);
+            return Ok(result);
+        }
     }
 }

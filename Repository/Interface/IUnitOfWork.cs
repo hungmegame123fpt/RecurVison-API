@@ -13,6 +13,10 @@ namespace Repository.Interface
         IUserRepository UserRepository { get; }
         IUserSubscriptionRepository UserSubscriptionRepository { get; }
         ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
+        IVirtualInterviewRepository VirtualInterviewRepository { get;  }
+        IInterviewQuestionRepository InterviewQuestionRepository { get;  }
+        IKeywordRepository KeywordRepository { get;  }
+        IJobFieldRepository JobFieldRepository { get;  }
         Task SaveChanges();
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task CommitAsync();

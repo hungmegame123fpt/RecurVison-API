@@ -39,6 +39,7 @@ namespace Repository
                     CurrentVersion = cv.CurrentVersion,
                     TotalVersions = cv.CvVersions.Count,
                     FilePath = cv.FilePath,
+                    FieldId = cv.FieldId,
                     LatestVersion = cv.CvVersions
                             .OrderByDescending(v => v.VersionNumber)
                             .FirstOrDefault() != null
@@ -120,6 +121,107 @@ namespace Repository
             _context.CvVersions.Add(version);
             await _context.SaveChangesAsync();
             return version;
+        }
+        public async Task MatchKeywordsAndSaveAsync(int cvId, string plainTextCv)
+        {
+            // STEP 1: Normalize keywords from CV
+            var cvWords = plainTextCv
+                .ToLower()
+                .Split(new[] { ' ', '\r', '\n', '\t', '.', ',', ':', ';', '-', '/', '\\', '(', ')', '*', '"' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(w => w.Trim())
+                .Where(w => w.Length > 1)
+                .Distinct()
+                .ToList();
+
+            if (!cvWords.Any()) return;
+
+            // STEP 2: Get all relevant keywords from DB
+            var keywords = await _context.Keywords
+                .Include(k => k.JobField)
+                .Where(k => cvWords.Contains(k.Keyword1.ToLower()))
+                .ToListAsync();
+
+            if (!keywords.Any()) return;
+
+            // STEP 3: Find job postings related to those keyword job fields
+            var matchedFieldIds = keywords.Select(k => k.FieldId).Distinct().ToList();
+
+            var jobPostings = await _context.JobPostings
+                .Where(j => j.FieldId != null && matchedFieldIds.Contains(j.FieldId.Value))
+                .ToListAsync();
+
+            if (!jobPostings.Any()) return;
+
+            var matches = new List<CvKeywordMatch>();
+
+            // STEP 4: Create CvKeywordMatch records
+            foreach (var job in jobPostings)
+            {
+                var relevantKeywords = keywords.Where(k => k.FieldId == job.FieldId);
+
+                foreach (var keyword in relevantKeywords)
+                {
+                    bool isPresent = cvWords.Contains(keyword.Keyword1.ToLower());
+
+                    matches.Add(new CvKeywordMatch
+                    {
+                        CvId = cvId,
+                        JobId = job.JobId,
+                        KeywordId = keyword.KeywordId,
+                        IsPresent = isPresent,
+                        MatchScore = isPresent ? (keyword.ImportanceScore ?? 1) : 0
+                    });
+                }
+            }
+
+            // STEP 5: Save matches
+            if (matches.Any())
+            {
+                _context.CvKeywordMatches.AddRange(matches);
+                await _context.SaveChangesAsync();
+            }
+        }
+        public async Task<int?> CategorizeCvByFieldAsync(int cvId, string plainTextContent)
+        {
+            var cv = await _context.Cvs.FindAsync(cvId);
+            if (cv == null || string.IsNullOrWhiteSpace(plainTextContent))
+                return null;
+
+            // Step 1: Normalize text
+            var words = plainTextContent
+                .ToLower()
+                .Split(new[] { ' ', '\n', '\r', '\t', ',', '.', ':', ';', '-', '/', '\\', '(', ')', '*', '"' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(w => w.Trim())
+                .Where(w => w.Length > 1)
+                .Distinct()
+                .ToList();
+
+            // Step 2: Load keywords with associated FieldId
+            var keywordMatches = await _context.Keywords
+                .Where(k => k.FieldId != null && words.Contains(k.Keyword1.ToLower()))
+                .ToListAsync();
+
+            if (!keywordMatches.Any()) return null;
+
+            // Step 3: Group by field_id and calculate match score (sum of importance)
+            var bestMatch = keywordMatches
+                .GroupBy(k => k.FieldId)
+                .Select(g => new
+                {
+                    FieldId = g.Key!.Value,
+                    TotalScore = g.Sum(k => k.ImportanceScore ?? 1)
+                })
+                .OrderByDescending(x => x.TotalScore)
+                .FirstOrDefault();
+
+            if (bestMatch == null) return null;
+
+            // Step 4: Update the Cv with selected FieldId
+            cv.FieldId = bestMatch.FieldId;
+            cv.LastModified = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return bestMatch.FieldId;
         }
 
     }

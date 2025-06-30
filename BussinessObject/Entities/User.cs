@@ -46,4 +46,5 @@ public partial class User
     public virtual ICollection<UserSubscription> UserSubscriptions { get; set; } = new List<UserSubscription>();
 
     public virtual ICollection<VirtualInterview> VirtualInterviews { get; set; } = new List<VirtualInterview>();
+    public virtual ICollection<UserFieldPreference> UserFieldPreferences { get; set; } = new List<UserFieldPreference>();
 }

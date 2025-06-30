@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject.Entities;
+using System.Linq.Expressions;
 
 namespace Service.Interface
 {
@@ -17,6 +19,7 @@ namespace Service.Interface
         Task<bool> SuspendUserAsync(int userId);
         Task<bool> ActivateUserAsync(int userId);
         Task<UserStatsDto> GetUserStatsAsync();
+        Task<List<UserDto>> GetAllAsync(Expression<Func<User, bool>>? filter = null, string? includeProperties = null);
         //Task<byte[]> ExportUsersAsync(string format = "csv");
     }
 }

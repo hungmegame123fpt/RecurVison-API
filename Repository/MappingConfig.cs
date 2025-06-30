@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.DTO.SubscriptionPlan;
 using BusinessObject.DTO.UserSubscription;
+using BusinessObject.DTO.VirtualInterview;
+using BusinessObject.DTO.InterviewQuestion;
 
 namespace Repository
 {
@@ -23,6 +25,13 @@ namespace Repository
             CreateMap<UpdateSubscriptionPlanDto, SubscriptionPlan>().ReverseMap();
             CreateMap<UserSubscription, UserSubscriptionDto>().ReverseMap();
             CreateMap<UserSubscription, CreateUserSubscriptionDto>().ReverseMap();
+            CreateMap<VirtualInterview, VirtualInterviewDto>().ReverseMap();
+            CreateMap<VirtualInterview, CreateVirtualInterviewDto>().ReverseMap();
+            CreateMap<VirtualInterview, UpdateInterviewStatusDto>().ReverseMap();
+            CreateMap<InterviewQuestion, InterviewQuestionDto>().ReverseMap();
+            CreateMap<InterviewQuestion, CreateInterviewQuestionDto>().ReverseMap();
+            CreateMap<InterviewQuestion, UpdateQuestionScoreDto>().ReverseMap();
+            CreateMap<InterviewQuestion, UpdateAnswerDto>().ReverseMap();
         }
     }
 }

@@ -21,6 +21,10 @@ namespace Repository
         public ISubscriptionPlanRepository SubscriptionPlanRepository { get; set; }
         public IUserRepository UserRepository { get; set; }
         public IUserSubscriptionRepository UserSubscriptionRepository { get; set; }
+        public IVirtualInterviewRepository VirtualInterviewRepository { get; set; }
+        public IInterviewQuestionRepository InterviewQuestionRepository { get; set; }
+        public IKeywordRepository KeywordRepository { get; set; }
+        public IJobFieldRepository JobFieldRepository { get; set; }
         public UnitOfWork(RecurVisionV1Context db, IConfiguration configuration)
         {
             _db = db;
@@ -30,6 +34,7 @@ namespace Repository
             SubscriptionPlanRepository = new SubscriptionPlanRepository(_db);
             UserRepository = new UserRepository(_db);
             UserSubscriptionRepository = new UserSubscriptionRepository(_db);
+            JobFieldRepository = new JobFieldRepository(_db);
         }
         public async Task SaveChanges()
         {

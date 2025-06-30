@@ -18,6 +18,9 @@ public partial class CareerPlan
     public string? CurrentPosition { get; set; }
 
     public int? TimelineYears { get; set; }
+    public int? TargetFieldId { get; set; }
+
+    public JobField TargetField { get; set; } = new JobField();
 
     public virtual ICollection<CareerMilestone> CareerMilestones { get; set; } = new List<CareerMilestone>();
 

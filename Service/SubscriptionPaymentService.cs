@@ -94,10 +94,12 @@ namespace Service
 
             // Create payment link
             var createPayment = await _payOS.createPaymentLink(paymentData);
-
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(request.UserId);
             // Store order code for webhook processing using repository
             subscription.PaymentStatus = $"PENDING:{orderCode}";
+            user.SubscriptionStatus = "PENDING";
             await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
+            await _unitOfWork.UserRepository.UpdateAsync(user);
             await _unitOfWork.SaveChanges();
 
             // Commit transaction
@@ -119,7 +121,8 @@ namespace Service
 
         // Find subscription by order code using repository
         var subscription = await _unitOfWork.UserSubscriptionRepository.GetSubscriptionByOrderCodeAsync(webhookRequest.OrderCode);
-        if (subscription == null)
+        var user = await _unitOfWork.UserRepository.GetByIdAsync(subscription.UserId);
+            if (subscription == null)
         {
             await _unitOfWork.RollbackAsync();
             _logger.LogWarning("Subscription not found for order code: {OrderCode}", webhookRequest.OrderCode);
@@ -131,7 +134,6 @@ namespace Service
             // Calculate subscription period
             var startDate = DateTime.UtcNow;
             var endDate = CalculateEndDate(startDate, subscription.Plan?.BillingCycle);
-
             // Update subscription using repository
             subscription.PaymentStatus = "ACTIVE";
             subscription.StartDate = startDate;
@@ -141,9 +143,13 @@ namespace Service
             await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
             await _unitOfWork.SaveChanges();
             await _unitOfWork.CommitAsync();
-
-            _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
-                subscription.SubscriptionId, subscription.UserId);
+            //Update User Subscriptipn status
+            user.SubscriptionStatus = "ACTIVE";
+            await _unitOfWork.UserRepository.UpdateAsync(user);
+            await _unitOfWork.SaveChanges();
+            await _unitOfWork.CommitAsync();
+           _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
+            subscription.SubscriptionId, subscription.UserId);
 
             return true;
         }
