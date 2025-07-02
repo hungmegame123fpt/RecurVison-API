@@ -236,17 +236,17 @@ public partial class RecurVisionV1Context : DbContext
                 .ValueGeneratedOnAdd()
                 .HasColumnName("question_id");
             entity.Property(e => e.AnswerText)
-                .HasColumnType("text")
+                .HasColumnType("nvarchar(500)")
                 .HasColumnName("answer_text");
             entity.Property(e => e.Feedback)
-                .HasColumnType("text")
+                .HasColumnType("nvarchar(500)")
                 .HasColumnName("feedback");
             entity.Property(e => e.InterviewId).HasColumnName("interview_id");
             entity.Property(e => e.QuestionScore)
                 .HasColumnType("decimal(18, 0)")
                 .HasColumnName("question_score");
             entity.Property(e => e.QuestionText)
-                .HasColumnType("text")
+                .HasColumnType("nvarchar(500)")
                 .HasColumnName("question_text");
 
             entity.HasOne(d => d.Interview).WithMany(p => p.InterviewQuestions)

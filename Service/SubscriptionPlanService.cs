@@ -151,12 +151,12 @@ namespace Service
             // Apply filters
             if (!string.IsNullOrEmpty(filter.UserType))
             {
-                query = query.Where(p => p.UserType.Equals(filter.UserType, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.UserType.Contains(filter.UserType, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(filter.BillingCycle))
             {
-                query = query.Where(p => p.BillingCycle.Equals(filter.BillingCycle, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p => p.BillingCycle.Contains(filter.BillingCycle, StringComparison.OrdinalIgnoreCase));
             }
 
             if (filter.MinPrice.HasValue)
@@ -186,7 +186,7 @@ namespace Service
                 "planname" => filter.SortOrder?.ToUpper() == "DESC"
                     ? query.OrderByDescending(p => p.PlanName)
                     : query.OrderBy(p => p.PlanName),
-                "createdat" => filter.SortOrder?.ToUpper() == "DESC"
+                "createdate" => filter.SortOrder?.ToUpper() == "DESC"
                     ? query.OrderByDescending(p => p.CreatedAt)
                     : query.OrderBy(p => p.CreatedAt),
                 _ => filter.SortOrder?.ToUpper() == "DESC"

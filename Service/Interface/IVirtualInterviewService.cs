@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.VirtualInterview;
+﻿using BusinessObject.DTO.AiClient;
+using BusinessObject.DTO.VirtualInterview;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace Service.Interface
     public interface IVirtualInterviewService
     {
         Task<StartInterviewResponse> StartInterviewAsync(StartInterviewRequest request);
+        Task<SubmitAnswerResponse> SubmitAnswerAsync(SubmitAnswerRequest request);
         Task<VirtualInterviewDto> CreateInterviewAsync(CreateVirtualInterviewDto createDto);
         Task<VirtualInterviewDto?> GetInterviewByIdAsync(int interviewId);
         Task<List<VirtualInterviewDto>> GetInterviewsByUserIdAsync(int userId);

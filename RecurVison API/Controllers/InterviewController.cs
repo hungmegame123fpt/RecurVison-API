@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.VirtualInterview;
+﻿using BusinessObject.DTO.AiClient;
+using BusinessObject.DTO.VirtualInterview;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
@@ -181,6 +182,20 @@ namespace RecurVison_API.Controllers
         {
             var result = await _interviewService.StartInterviewAsync(request);
             return Ok(result);
+        }
+        [HttpPost("submit-answer")]
+        public async Task<IActionResult> SubmitAnswerAsync([FromBody] SubmitAnswerRequest request)
+        {
+            try
+            {
+                var result = await _interviewService.SubmitAnswerAsync(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error submitting interview answer.");
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 }

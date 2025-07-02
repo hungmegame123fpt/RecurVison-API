@@ -80,7 +80,56 @@ namespace Service
             return new StartInterviewResponse
             {
                 InterviewId = interview.InterviewId,
-                Questions = _mapper.Map<List<InterviewQuestionDto>>(aiResponse.Data.Questions)
+                Questions = _mapper.Map<List<InterviewQuestionDto>>(aiResponse.Data.Questions),
+                Analysis = aiResponse.Data.Analysis,
+                NextFocusAreas = aiResponse.Data.NextFocusAreas,
+                CleanCvText = parsedCv.PlainTextContent, 
+                JobDescription = request.JobDescription,
+            };
+        }
+        public async Task<SubmitAnswerResponse> SubmitAnswerAsync(SubmitAnswerRequest request)
+        {
+            var question = await _unitOfWork.InterviewQuestionRepository.GetByIdAsync(request.QuestionId);
+            if (question == null || question.InterviewId != request.InterviewId)
+                throw new Exception("Invalid question or interview.");
+
+            // Save user answer
+            question.AnswerText = request.AnswerText;
+
+            // Load data from interview
+            var interview = await _unitOfWork.VirtualInterviewRepository.GetByIdAsync(request.InterviewId);
+            if (interview == null)
+                throw new Exception("Interview not found.");
+
+           
+
+            var aiRequest = new AiAnswerEvaluateRequest
+            {
+                SessionId = request.InterviewId.ToString(),
+                AnswerText = request.AnswerText,
+                CleanedCvText = request.CleanCvText,
+                JobDescription = request.JobDescription,
+                PreviousQuestions = new List<string> { question.QuestionText ?? "" }
+            };
+
+            var aiResponse = await _aiClient.EvaluateAnswerAsync(aiRequest);
+            if (aiResponse?.Data?.Feedback == null)
+                throw new Exception("AI feedback response invalid.");
+
+            // Save AI feedback
+            question.Feedback = aiResponse.Data.Feedback.Feedback;
+            question.QuestionScore = (decimal?)aiResponse.Data.Feedback.Score;
+
+            await _unitOfWork.InterviewQuestionRepository.UpdateAsync(question);
+            await _unitOfWork.SaveChanges();
+
+            return new SubmitAnswerResponse
+            {
+                QuestionId = question.QuestionId,
+                InterviewId = question.InterviewId,
+                Score = question.QuestionScore,
+                Feedback = question.Feedback,
+                NextQuestion = aiResponse.Data.NextQuestion
             };
         }
         public async Task<VirtualInterviewDto> CreateInterviewAsync(CreateVirtualInterviewDto createDto)

@@ -19,7 +19,7 @@ public partial class VirtualInterview
 
     public string? RecordingPath { get; set; }
 
-    public virtual ICollection<InterviewQuestion> InterviewQuestions { get; set; } = new List<InterviewQuestion>();
+    public virtual ICollection<InterviewQuestion> InterviewQuestions { get; set; } = null!;
 
     public virtual JobPosting? Job { get; set; }
 

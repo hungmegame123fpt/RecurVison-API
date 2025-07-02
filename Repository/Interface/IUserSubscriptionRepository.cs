@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTO.UserSubscription;
+using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace Repository.Interface
 {
     public interface IUserSubscriptionRepository : IBaseRepository<UserSubscription>
     {
+        Task<List<int?>> GetPremiumUserIds();
         Task<UserSubscription?> GetUserActiveSubscriptionAsync(int userId);
         Task<List<UserSubscription>> GetUserSubscriptionHistoryAsync(int userId);
         Task<List<UserSubscription>> GetSubscriptionsByPlanAsync(int planId);

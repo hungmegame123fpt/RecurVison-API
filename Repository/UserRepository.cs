@@ -25,6 +25,26 @@ namespace Repository
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }
+        public async Task<List<User>> GetAllAsync(bool includeRelations = false)
+        {
+            IQueryable<User> query = _context.Users;
+
+            if (includeRelations)
+            {
+                query = query
+                    .Include(u => u.CareerPlans)
+                    .Include(u => u.Cvs)
+                    .Include(u => u.JobPostings)
+                    .Include(u => u.UserCharacteristics)
+                    .Include(u => u.UserRoleAssignedByNavigations)
+                    .Include(u => u.UserRoleUsers)
+                    .Include(u => u.UserSubscriptions)
+                    .Include(u => u.VirtualInterviews)
+                    .Include(u => u.UserFieldPreferences);
+            }
+
+            return await query.ToListAsync();
+        }
 
         public async Task<User?> GetByEmailAsync(string email)
         {

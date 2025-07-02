@@ -5,6 +5,7 @@ using Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,6 +54,12 @@ namespace Service
                 _logger.LogError(ex, "Error calling AI session API");
                 return null;
             }
+        }
+        public async Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request)
+        {
+            var response = await _httpClient.PostAsJsonAsync("https://recruvision-h8freyfdh3bsb9fs.southeastasia-01.azurewebsites.net/api/v1/question-composer/answer", request);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<AiAnswerEvaluateResponse>();
         }
     }
 }

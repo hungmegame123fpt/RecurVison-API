@@ -26,5 +26,6 @@ namespace Service.Interface
         Task<int> GetActiveSubscriptionCountAsync();
         Task<Dictionary<string, int>> GetSubscriptionStatsByStatusAsync();
         Task<UserSubscriptionDto?> GetSubscriptionWithDetailsAsync(int subscriptionId);
+        Task<PremiumRateStatsDto> GetPremiumRateStatsAsync();
     }
 }

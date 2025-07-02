@@ -10,5 +10,7 @@ namespace Service.Interface
     public interface IAIClient
     {
         Task<AiSessionResponse?> StartSessionAsync(AiSessionRequest request);
+        Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request);
+
     }
 }

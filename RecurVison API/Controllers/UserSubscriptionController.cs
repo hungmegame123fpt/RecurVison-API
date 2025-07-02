@@ -288,5 +288,11 @@ namespace RecurVison_API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        [HttpGet("analytics/premium-rate")]
+        public async Task<IActionResult> GetPremiumRate()
+        {
+            var result = await _service.GetPremiumRateStatsAsync();
+            return Ok(result);
+        }
     }
 }

@@ -12,6 +12,7 @@ using BusinessObject.DTO.UserSubscription;
 using BusinessObject.DTO.VirtualInterview;
 using BusinessObject.DTO.InterviewQuestion;
 using BusinessObject.DTO.CvVersion;
+using BusinessObject.DTO.AiClient;
 
 namespace Repository
 {
@@ -34,6 +35,11 @@ namespace Repository
             CreateMap<InterviewQuestion, UpdateQuestionScoreDto>().ReverseMap();
             CreateMap<InterviewQuestion, UpdateAnswerDto>().ReverseMap();
             CreateMap<CvVersion, CvVersionDTO>().ReverseMap();
+            CreateMap<AiQuestion, InterviewQuestionDto>()
+                .ForMember(dest => dest.QuestionText, opt => opt.MapFrom(src => src.Question))
+                .ForMember(dest => dest.QuestionId, opt => opt.Ignore()) // If not present in AiQuestion
+                .ForMember(dest => dest.InterviewId, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }

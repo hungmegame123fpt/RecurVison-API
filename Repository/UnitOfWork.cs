@@ -39,6 +39,8 @@ namespace Repository
             JobFieldRepository = new JobFieldRepository(_db);
             CvAnalysisRepository = new CvAnalysisRepository(_db);
             CvVersionRepository = new CvVersionRepository(_db);
+            VirtualInterviewRepository = new VirtualInterviewRepository(_db);
+            InterviewQuestionRepository = new InterviewQuestionRepository(_db);
         }
         public async Task SaveChanges()
         {

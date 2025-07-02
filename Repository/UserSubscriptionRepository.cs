@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Repository.Interface;
+using BusinessObject.DTO.UserSubscription;
 
 namespace Repository
 {
@@ -42,6 +43,15 @@ namespace Repository
                 includeProperties: "Plan"
             );
             return subscriptions.OrderByDescending(s => s.StartDate).ToList();
+        }
+
+        public async Task<List<int?>> GetPremiumUserIds()
+        {
+            return await _db.UserSubscriptions
+                .Where(s => s.StartDate <= DateTime.UtcNow && s.EndDate >= DateTime.UtcNow)
+                .Select(s => s.UserId)
+                .Distinct()
+                .ToListAsync();
         }
 
         public async Task<List<UserSubscription>> GetSubscriptionsByPlanAsync(int planId)
@@ -175,6 +185,6 @@ namespace Repository
                 includeProperties: "User,Plan"
             );
             return subscriptions.FirstOrDefault();
-        }
+        }    
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.UserSubscription;
+using BusinessObject.Entities;
 using Microsoft.Extensions.Logging;
 using Repository;
 using Repository.Interface;
@@ -243,6 +244,41 @@ namespace Service
                 _logger.LogError(ex, "Error getting subscription details for {SubscriptionId}", subscriptionId);
                 throw;
             }
+        }
+        public async Task<PremiumRateStatsDto> GetPremiumRateStatsAsync()
+        {
+            DateTime today = DateTime.UtcNow.Date;
+            DateTime startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            DateTime startOfMonth = new DateTime(today.Year, today.Month, 1);
+
+            // Get all users
+            var allUsers = await _unitOfWork.UserRepository.GetAllAsync(false);
+
+            // Get all active premium subscriptions
+            var activeSubs = await _unitOfWork.UserSubscriptionRepository.GetPremiumUserIds();
+
+            var stats = new PremiumRateStatsDto
+            {
+                AllTime = CalculateRate(allUsers, activeSubs),
+                Today = CalculateRate(allUsers.Where(u => u.CreatedAt.Value.Date == today), activeSubs),
+                ThisWeek = CalculateRate(allUsers.Where(u => u.CreatedAt.Value.Date >= startOfWeek), activeSubs),
+                ThisMonth = CalculateRate(allUsers.Where(u => u.CreatedAt.Value.Date >= startOfMonth), activeSubs),
+            };
+
+            return stats;
+        }
+
+        private PremiumRateDetail CalculateRate(IEnumerable<User> users, List<int?> premiumUserIds)
+        {
+            var total = users.Count();
+            var premium = users.Count(u => premiumUserIds.Contains(u.UserId));
+
+            return new PremiumRateDetail
+            {
+                TotalUsers = total,
+                PremiumUsers = premium,
+                Rate = total == 0 ? 0 : Math.Round((decimal)premium / total * 100, 2)
+            };
         }
     }
 }
