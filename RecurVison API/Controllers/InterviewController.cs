@@ -176,6 +176,12 @@ namespace RecurVison_API.Controllers
                 return StatusCode(500, "An error occurred while deleting the interview");
             }
         }
+        [HttpPost("start")]
+        public async Task<IActionResult> Start([FromBody] StartInterviewRequest request)
+        {
+            var result = await _interviewService.StartInterviewAsync(request);
+            return Ok(result);
+        }
     }
 }
 

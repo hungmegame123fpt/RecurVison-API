@@ -9,6 +9,7 @@ namespace Service.Interface
 {
     public interface IVirtualInterviewService
     {
+        Task<StartInterviewResponse> StartInterviewAsync(StartInterviewRequest request);
         Task<VirtualInterviewDto> CreateInterviewAsync(CreateVirtualInterviewDto createDto);
         Task<VirtualInterviewDto?> GetInterviewByIdAsync(int interviewId);
         Task<List<VirtualInterviewDto>> GetInterviewsByUserIdAsync(int userId);

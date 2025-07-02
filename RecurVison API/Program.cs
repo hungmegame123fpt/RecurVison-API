@@ -97,6 +97,8 @@ namespace RecurVison_API
             builder.Services.AddScoped<IVirtualInterviewService, VirtualInterviewService>();
             builder.Services.AddScoped<IKeywordService, KeywordService>();
             builder.Services.AddScoped<ICvVersionService, CvVersionService>();
+            builder.Services.AddScoped<IAIClient, AIClient>();
+            builder.Services.AddHttpClient<IAIClient, AIClient>();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())

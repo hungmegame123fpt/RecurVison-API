@@ -1,4 +1,7 @@
 ﻿using AutoMapper;
+using BusinessObject.DTO;
+using BusinessObject.DTO.AiClient;
+using BusinessObject.DTO.InterviewQuestion;
 using BusinessObject.DTO.VirtualInterview;
 using BusinessObject.Entities;
 using Repository.Interface;
@@ -14,12 +17,71 @@ namespace Service
     public class VirtualInterviewService : IVirtualInterviewService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICVService _cVService;
+        private readonly IAIClient _aiClient;
         private readonly IMapper _mapper;
 
-        public VirtualInterviewService(IUnitOfWork unitOfWork, IMapper mapper)
+        public VirtualInterviewService(IUnitOfWork unitOfWork, IMapper mapper, ICVService cVService, IAIClient aiClient)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cVService = cVService;
+            _aiClient = aiClient;
+        }
+        public async Task<StartInterviewResponse> StartInterviewAsync(StartInterviewRequest request)
+        {
+            // 1. Tạo bản ghi Interview trước để có InterviewId (dùng làm session_id)
+            var interview = new VirtualInterview
+            {
+                UserId = request.UserId,
+                CreatedAt = DateTime.UtcNow,
+                Status = "in_progress"
+            };
+
+            await _unitOfWork.VirtualInterviewRepository.CreateAsync(interview);
+            await _unitOfWork.SaveChanges(); // Lấy được interview.InterviewId
+
+            var sessionId = interview.InterviewId.ToString();
+
+            // 2. Gọi ParseCv API để lấy plain text
+            var parsedCv = await _cVService.ParseCvAsync(request.UserId, request.CvId);
+            if (parsedCv == null || string.IsNullOrWhiteSpace(parsedCv.PlainTextContent))
+                throw new Exception("CV text not found or empty.");
+
+            // 3. Gọi AI với cv_text + job_description + session_id (interviewId)
+            var aiRequest = new AiSessionRequest
+            {
+                CleanedCvText = parsedCv.PlainTextContent,
+                JobDescription = request.JobDescription,
+                PreviousQuestions = new List<string>(), // bắt đầu mới
+                SessionId = sessionId
+            };
+
+            var aiResponse = await _aiClient.StartSessionAsync(aiRequest);
+
+            if (aiResponse?.Data?.Questions == null)
+                throw new Exception("AI did not return any questions.");
+
+            // 4. Lưu các câu hỏi AI trả về
+            foreach (var q in aiResponse.Data.Questions)
+            {
+                var question = new InterviewQuestion
+                {
+                    InterviewId = interview.InterviewId,
+                    QuestionText = q.Question,
+                    Feedback = null,
+                    QuestionScore = null
+                };
+                await _unitOfWork.InterviewQuestionRepository.CreateAsync(question);
+            }
+
+            await _unitOfWork.SaveChanges();
+
+            return new StartInterviewResponse
+            {
+                InterviewId = interview.InterviewId,
+                Questions = _mapper.Map<List<InterviewQuestionDto>>(aiResponse.Data.Questions)
+            };
         }
         public async Task<VirtualInterviewDto> CreateInterviewAsync(CreateVirtualInterviewDto createDto)
         {
