@@ -21,7 +21,7 @@ public partial class Cv
     public int? FieldId { get; set; }
 
     public DateTime? LastModified { get; set; }
-    public JobField TargetField { get; set; } = new JobField();
+    public JobField TargetField { get; set; } = null!;
     public virtual ICollection<CvKeywordMatch> CvKeywordMatches { get; set; } = new List<CvKeywordMatch>();
 
     public virtual ICollection<CvVersion> CvVersions { get; set; } = new List<CvVersion>();

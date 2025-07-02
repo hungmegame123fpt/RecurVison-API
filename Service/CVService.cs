@@ -295,6 +295,51 @@ namespace Service
                 return content; // Return original on error
             }
         }
+        public async Task<CvAnalysisResponse> ImportCvAnalysisJsonAsync(CvAnalysisRequest request)
+        {
+            try
+            {
+                if (request.File == null || !request.File.FileName.EndsWith(".json"))
+                {
+                    return new CvAnalysisResponse
+                    {
+                        Success = false,
+                        Message = "Invalid file. Only .json files are allowed."
+                    };
+                }
+
+                var fileUrl = await _fileStorageService.SaveJsonFileWithOriginalNameAsync(request.File, request.File.FileName);
+                var publicId = Path.GetFileNameWithoutExtension(request.File.FileName);
+
+                var analysisFile = new CvAnalysisFile
+                {
+                    CvVersionId = request.CvVersionId,
+                    FileUrl = fileUrl,
+                    PublicId = publicId,
+                    FileType = "json",
+                    Category = "cv_analysis"
+                };
+
+                await _unitOfWork.CvAnalysisRepository.CreateAsync(analysisFile);
+                await _unitOfWork.SaveChanges();
+
+                return new CvAnalysisResponse
+                {
+                    Success = true,
+                    Message = "JSON file uploaded and saved successfully.",
+                    FileUrl = fileUrl
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error importing CV analysis JSON.");
+                return new CvAnalysisResponse
+                {
+                    Success = false,
+                    Message = "An error occurred while importing the JSON analysis."
+                };
+            }
+        }
         public async Task<CvListResponse> GetUserCvsAsync(int userId)
         {
             try
@@ -499,7 +544,10 @@ namespace Service
             {
                 PlainTextContent = plainText
             };
-
+            var cvVersion = await _unitOfWork.CVRepository.GetLatestVersionAsync(cvId);
+            cvVersion.PlainText = plainText;
+            await _unitOfWork.CvVersionRepository.UpdateAsync(cvVersion);
+            await _unitOfWork.SaveChanges();
             _documentParserService.ExtractCvSections(result);
             return result;
         }

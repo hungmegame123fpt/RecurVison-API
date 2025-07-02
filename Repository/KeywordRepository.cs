@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject;
+using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using System;
@@ -10,49 +11,24 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class KeywordRepository : IKeywordRepository
+    public class KeywordRepository : BaseRepository<Keyword>, IKeywordRepository
     {
         private readonly DbContext _context;
         private readonly DbSet<Keyword> _dbSet;
 
-        public KeywordRepository(DbContext context)
+        public KeywordRepository(RecurVisionV1Context db) : base(db)
         {
-            _context = context;
-            _dbSet = context.Set<Keyword>();
         }
-
-        public async Task<Keyword> CreateAsync(Keyword entity)
+        public async Task<IEnumerable<Keyword>> GetAllAsync(string? search = null)
         {
-            await _dbSet.AddAsync(entity);
-            return entity;
-        }
+            IQueryable<Keyword> query = _dbSet.Include(k => k.JobField);
 
-        public async Task<Keyword> UpdateAsync(Keyword entity)
-        {
-            _dbSet.Update(entity);
-            return entity;
-        }
-
-        public async Task DeleteAsync(Keyword entity)
-        {
-            _dbSet.Remove(entity);
-        }
-
-        public async Task<List<Keyword>> GetAllAsync(Expression<Func<Keyword, bool>>? filter = null, string? includeProperties = null)
-        {
-            IQueryable<Keyword> query = _dbSet;
-
-            if (filter != null)
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(filter);
-            }
-
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty);
-                }
+                var lowered = search.ToLower();
+                query = query.Where(k => k.Keyword1.ToLower().Contains(lowered) ||
+                                         k.Category!.ToLower().Contains(lowered) ||
+                                         (k.JobField != null && k.JobField.FieldName.ToLower().Contains(lowered)));
             }
 
             return await query.ToListAsync();

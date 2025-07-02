@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface IKeywordRepository : IBaseRepository<Keyword>
+    public interface ICvVersionRepository : IBaseRepository<CvVersion>
+
     {
-        Task<IEnumerable<Keyword>> GetAllAsync(string? search = null);
-        Task<string?> GetKeywordNameByIdAsync(int? id);
 
     }
 }

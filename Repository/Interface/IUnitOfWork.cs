@@ -17,6 +17,8 @@ namespace Repository.Interface
         IInterviewQuestionRepository InterviewQuestionRepository { get;  }
         IKeywordRepository KeywordRepository { get;  }
         IJobFieldRepository JobFieldRepository { get;  }
+        ICvAnalysisRepository CvAnalysisRepository { get;  }
+        ICvVersionRepository CvVersionRepository { get;  }
         Task SaveChanges();
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task CommitAsync();

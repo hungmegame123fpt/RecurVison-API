@@ -52,6 +52,7 @@ public partial class RecurVisionV1Context : DbContext
     public DbSet<FieldCategory> FieldCategories { get; set; }
     public DbSet<JobField> JobFields { get; set; }
     public DbSet<UserFieldPreference> UserFieldPreferences { get; set; }
+    public DbSet<CvAnalysisFile> CvAnalysisFiles { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=tcp:recruvisionserver.database.windows.net,1433;Initial Catalog=RecurVision_V1;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
@@ -214,6 +215,9 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.FilePath)
                 .HasMaxLength(255)
                 .HasColumnName("file_path");
+            entity.Property(e => e.PlainText)
+                .HasMaxLength(255)
+                .HasColumnName("plain_text");
             entity.Property(e => e.VersionNumber).HasColumnName("version_number");
 
             entity.HasOne(d => d.Cv).WithMany(p => p.CvVersions)
@@ -600,10 +604,11 @@ public partial class RecurVisionV1Context : DbContext
                .ValueGeneratedOnAdd()
                .HasColumnName("field_id");
             entity.Property(e => e.FieldName).IsRequired().HasMaxLength(255).HasColumnName("field_name");
-            entity.Property(e => e.CommonSkills).HasColumnType("text");
-            entity.Property(e => e.TypicalKeywords).HasColumnType("text");
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.CommonSkills).HasColumnType("text").HasColumnName("common_skills");
+            entity.Property(e => e.TypicalKeywords).HasColumnType("text").HasColumnName("typical_keywords");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()").HasColumnName("created_at");
+            entity.Property(e => e.IsActive).HasDefaultValue(true).HasColumnName("is_active");
 
             entity.HasOne(e => e.Category)
                   .WithMany(c => c.JobFields)
@@ -672,7 +677,23 @@ public partial class RecurVisionV1Context : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__VIRTUAL_I__user___10566F31");
         });
+        modelBuilder.Entity<CvAnalysisFile>(entity =>
+        {
+            entity.ToTable("CvAnalysisFiles");
 
+            entity.HasKey(x => x.Id);
+            entity.Property(e => e.Id)
+               .ValueGeneratedOnAdd();
+            entity.Property(x => x.FileUrl).IsRequired().HasMaxLength(500);
+            entity.Property(x => x.PublicId).IsRequired().HasMaxLength(255);
+            entity.Property(x => x.FileType).HasMaxLength(50);
+            entity.Property(x => x.Category).HasMaxLength(100);
+            entity.HasOne(x => x.CvVersion)
+                .WithMany()
+                .HasForeignKey(x => x.CvVersionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 

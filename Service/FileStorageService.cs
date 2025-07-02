@@ -47,17 +47,35 @@ namespace Service
                 // Generate unique public ID for Cloudinary
                 var publicId = GenerateCloudinaryPublicId(fileName);
                 using var stream = file.OpenReadStream();
-                var uploadParams = new RawUploadParams()
+                UploadResult uploadResult;
+                var fileExtension = Path.GetExtension(fileName).ToLower();
+                if (fileExtension == ".mp4" || fileExtension == ".mov" || file.ContentType.StartsWith("video"))
                 {
-                    File = new FileDescription(fileName, stream),
-                    PublicId = publicId,
-                    Folder = _folder,
-                    UseFilename = false,
-                    UniqueFilename = true,
-                    AccessMode = "public",
-                    Type = "upload"
-                };
-                var uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
+                    var uploadParams = new VideoUploadParams()
+                    {
+                        File = new FileDescription(fileName, stream),
+                        PublicId = publicId,
+                        Folder = _folder,
+                        UseFilename = false,
+                        UniqueFilename = true,
+                        AccessMode = "public"
+                    };
+                    uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
+                }
+                else
+                {
+                    var uploadParams = new RawUploadParams()
+                    {
+                        File = new FileDescription(fileName, stream),
+                        PublicId = publicId,
+                        Folder = _folder,
+                        UseFilename = false,
+                        UniqueFilename = true,
+                        AccessMode = "public",
+                        Type = "upload"
+                    };
+                    uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
+                }
                 if (uploadResult.Error != null)
                 {
                     _logger.LogError("Cloudinary upload error: {Error}", uploadResult.Error.Message);
@@ -73,8 +91,44 @@ namespace Service
                 throw;
             }
         }
+        public async Task<string> SaveJsonFileWithOriginalNameAsync(IFormFile file, string originalFileName)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    throw new ArgumentException("File is empty or null");
 
-            public async Task<byte[]?> GetFileAsync(string filePath)
+                var publicId = Path.GetFileNameWithoutExtension(originalFileName); 
+                using var stream = file.OpenReadStream();
+
+                var uploadParams = new RawUploadParams()
+                {
+                    File = new FileDescription(originalFileName, stream),
+                    PublicId = publicId,
+                    Folder = "cv-analysis/json", // có thể cấu hình
+                    UseFilename = true,
+                    UniqueFilename = false,
+                    Type = "upload",
+                    AccessMode = "public"
+                };
+
+                var uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
+                if (uploadResult.Error != null)
+                {
+                    _logger.LogError("Cloudinary upload error: {Error}", uploadResult.Error.Message);
+                    throw new Exception($"Upload to Cloudinary failed: {uploadResult.Error.Message}");
+                }
+
+                return uploadResult.SecureUrl.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading JSON file: {FileName}", originalFileName);
+                throw;
+            }
+        }
+
+        public async Task<byte[]?> GetFileAsync(string filePath)
             {
                 try
                 {

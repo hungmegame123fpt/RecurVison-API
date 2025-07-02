@@ -11,6 +11,7 @@ using BusinessObject.DTO.SubscriptionPlan;
 using BusinessObject.DTO.UserSubscription;
 using BusinessObject.DTO.VirtualInterview;
 using BusinessObject.DTO.InterviewQuestion;
+using BusinessObject.DTO.CvVersion;
 
 namespace Repository
 {
@@ -32,6 +33,7 @@ namespace Repository
             CreateMap<InterviewQuestion, CreateInterviewQuestionDto>().ReverseMap();
             CreateMap<InterviewQuestion, UpdateQuestionScoreDto>().ReverseMap();
             CreateMap<InterviewQuestion, UpdateAnswerDto>().ReverseMap();
+            CreateMap<CvVersion, CvVersionDTO>().ReverseMap();
         }
     }
 }

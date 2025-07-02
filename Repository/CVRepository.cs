@@ -187,23 +187,46 @@ namespace Repository
             if (cv == null || string.IsNullOrWhiteSpace(plainTextContent))
                 return null;
 
-            // Step 1: Normalize text
-            var words = plainTextContent
+            // Step 1: Extract Objective section
+            var objectiveText = ExtractObjectiveSection(plainTextContent).ToLower();
+
+            // Normalize to words
+            var objectiveWords = objectiveText
+                .Split(new[] { ' ', '\n', '\r', '\t', ',', '.', ':', ';', '-', '/', '\\', '(', ')', '*', '"' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(w => w.Trim())
+                .Where(w => w.Length > 1)
+                .Distinct()
+                .ToHashSet();
+
+            // Step 2: Match JobField based on Objective
+            var allFields = await _context.JobFields.ToListAsync();
+            foreach (var field in allFields)
+            {
+                var fieldWords = field.FieldName.ToLower().Split(' ');
+                if (fieldWords.All(w => objectiveWords.Contains(w)))
+                {
+                    cv.FieldId = field.FieldId;
+                    cv.LastModified = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                    return field.FieldId;
+                }
+            }
+
+            // Step 3: Fallback – match by full content using keywords
+            var fullWords = plainTextContent
                 .ToLower()
                 .Split(new[] { ' ', '\n', '\r', '\t', ',', '.', ':', ';', '-', '/', '\\', '(', ')', '*', '"' }, StringSplitOptions.RemoveEmptyEntries)
                 .Select(w => w.Trim())
                 .Where(w => w.Length > 1)
                 .Distinct()
-                .ToList();
+                .ToHashSet();
 
-            // Step 2: Load keywords with associated FieldId
             var keywordMatches = await _context.Keywords
-                .Where(k => k.FieldId != null && words.Contains(k.Keyword1.ToLower()))
+                .Where(k => k.FieldId != null && fullWords.Contains(k.Keyword1.ToLower()))
                 .ToListAsync();
 
             if (!keywordMatches.Any()) return null;
 
-            // Step 3: Group by field_id and calculate match score (sum of importance)
             var bestMatch = keywordMatches
                 .GroupBy(k => k.FieldId)
                 .Select(g => new
@@ -216,13 +239,21 @@ namespace Repository
 
             if (bestMatch == null) return null;
 
-            // Step 4: Update the Cv with selected FieldId
             cv.FieldId = bestMatch.FieldId;
             cv.LastModified = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
             return bestMatch.FieldId;
         }
+        private string ExtractObjectiveSection(string text)
+        {
+            var start = text.IndexOf("objective", StringComparison.OrdinalIgnoreCase);
+            if (start == -1) return string.Empty;
 
+            var end = text.IndexOf("education", start, StringComparison.OrdinalIgnoreCase);
+            if (end == -1) end = text.Length;
+
+            return text.Substring(start, end - start).Trim();
+        }
     }
 }

@@ -18,6 +18,7 @@ public partial class CvVersion
     public string? ChangeSummary { get; set; }
 
     public decimal? AiScore { get; set; }
+    public string? PlainText { get; set; }
 
     public virtual Cv Cv { get; set; } = null!;
 }

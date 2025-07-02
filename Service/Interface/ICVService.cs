@@ -23,5 +23,6 @@ namespace Service.Interface
         Task<DeleteResponse> DeleteCvAsync(int userId, int cvId);
         Task<byte[]> EditPdfAsync(byte[] originalPdf, string newText);
         Task<string?> CategorizeCvByFieldAsync(int cvId, string plainTextContent);
+        Task<CvAnalysisResponse> ImportCvAnalysisJsonAsync(CvAnalysisRequest request);
     }
 }

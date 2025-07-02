@@ -40,7 +40,15 @@ namespace RecurVison_API.Controllers
 
             return BadRequest(result);
         }
+        [HttpPost("cv-version/{cvVersionId}/upload-analysis")]
+        public async Task<IActionResult> UploadCvAnalysisJson([FromForm] CvAnalysisRequest request)
+        {
+            var result = await _cvService.ImportCvAnalysisJsonAsync(request);
+            if (!result.Success)
+                return BadRequest(result);
 
+            return Ok(result);
+        }
         [HttpPost("export")]
         public async Task<IActionResult> ExportCv([FromBody] CVExportRequest request)
         {
