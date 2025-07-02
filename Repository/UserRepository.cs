@@ -23,7 +23,7 @@ namespace Repository
         }
         public async Task<User?> GetByIdAsync(int? id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id && u.AccountStatus == "Active");
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }
 
         public async Task<User?> GetByEmailAsync(string email)
