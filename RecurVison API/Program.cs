@@ -11,6 +11,7 @@ using BusinessObject.DTO.Email;
 using BusinessObject.DTO.Payment;
 using Microsoft.Extensions.Options;
 using Net.payOS;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace RecurVison_API
 {
@@ -19,6 +20,7 @@ namespace RecurVison_API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var configuration = builder.Configuration;
             // Add services to the container.
             builder.Services.AddDbContext<RecurVisionV1Context>(options =>
             {
@@ -49,7 +51,11 @@ namespace RecurVison_API
             {
                 options.MaxRequestBodySize = int.MaxValue;
             });
-            builder.Services.AddAuthentication("CookieAuth")
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = "CookieAuth";
+                options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+            })
                 .AddCookie("CookieAuth", options =>
                 {
                     options.LoginPath = "/Auth/login";
@@ -64,7 +70,31 @@ namespace RecurVison_API
                     options.Cookie.HttpOnly = false; // allow JS (Swagger) access
                     options.Cookie.SameSite = SameSiteMode.Lax; // or Lax for dev
                     options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Set to Always in production with HTTPS
+                })
+                .AddGoogle(options =>
+                {
+                    options.ClientId = configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+                    options.Scope.Add("profile");
+                    options.Scope.Add("email");
+
+                    options.SaveTokens = true; // Keep access token in the authentication ticket
                 });
+
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Path.StartsWithSegments("/api"))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+            });
 
             builder.Services.AddAuthorization();
             builder.Services.AddCors(options =>

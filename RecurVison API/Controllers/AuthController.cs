@@ -16,12 +16,14 @@ namespace RecurVison_API.Controllers
         private readonly IAuthService _authService;
         private readonly IEmailService _emailService;
         private readonly IOTPService _otpService;
+        private readonly IUserRoleService _roleService;
 
-        public AuthController(IAuthService authService, IEmailService emailService, IOTPService otpService)
+        public AuthController(IAuthService authService, IEmailService emailService, IOTPService otpService, IUserRoleService roleService)
         {
             _authService = authService;
             _emailService = emailService;
             _otpService = otpService;
+            _roleService = roleService;
         }
 
         [HttpPost("register")]
@@ -44,14 +46,19 @@ namespace RecurVison_API.Controllers
 
             if (result.Success && result.Data != null)
             {
+                var user = result.Data;
+                var role = await _roleService.CheckRole(user);
                 // Set authentication cookie
-                var claims = new[]
+                var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, result.Data.UserId.ToString()),
                     new Claim(ClaimTypes.Email, result.Data.Email),
                     new Claim(ClaimTypes.Name, $"{result.Data.FirstName} {result.Data.LastName}")
                 };
-
+                if (!string.IsNullOrEmpty(role))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
                 var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
                 var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
