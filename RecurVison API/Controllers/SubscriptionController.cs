@@ -1,13 +1,17 @@
 ﻿using BusinessObject.DTO.Payment;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Net.payOS;
 using Net.payOS.Types;
 using Repository.Interface;
+using Service;
 using Service.Interface;
+using System.Security.Claims;
 
 namespace RecurVison_API.Controllers
 {
+    [Authorize(AuthenticationSchemes = "CookieAuth")]
     [Route("api/[controller]")]
     [ApiController]
     public class SubscriptionController : ControllerBase
@@ -28,6 +32,13 @@ namespace RecurVison_API.Controllers
         [HttpPost("create-payment")]
         public async Task<IActionResult> CreateSubscriptionPayment([FromBody] CreatePaymentLinkRequest request)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+           request.UserId = int.Parse(userId);
             var result = await _subscriptionService.CreateSubscriptionPaymentAsync(request);
 
             if (result.Success)

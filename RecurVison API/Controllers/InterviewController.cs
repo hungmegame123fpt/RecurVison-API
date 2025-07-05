@@ -1,11 +1,14 @@
 ﻿using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.VirtualInterview;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
+using System.Security.Claims;
 
 namespace RecurVison_API.Controllers
 {
+    [Authorize(AuthenticationSchemes = "CookieAuth")]
     [Route("api/[controller]")]
     [ApiController]
     public class InterviewController : ControllerBase
@@ -180,6 +183,13 @@ namespace RecurVison_API.Controllers
         [HttpPost("start")]
         public async Task<IActionResult> Start([FromBody] StartInterviewRequest request)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+           request.UserId = int.Parse(userId);
             var result = await _interviewService.StartInterviewAsync(request);
             return Ok(result);
         }
