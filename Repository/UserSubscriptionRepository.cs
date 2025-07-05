@@ -24,7 +24,27 @@ namespace Repository
                 .Include(s => s.Plan)
                 .FirstOrDefaultAsync(s => s.SubscriptionId == id);
         }
+        public async Task<int> ExpireEndedSubscriptionsAsync()
+        {
+            var now = DateTime.UtcNow;
 
+            var expiredSubscriptions = await _db.UserSubscriptions
+                .Include(s => s.User)
+                .Where(s => s.PaymentStatus == "ACTIVE" && s.EndDate != null && s.EndDate <= now)
+                .ToListAsync();
+
+            foreach (var sub in expiredSubscriptions)
+            {
+                sub.PaymentStatus = "EXPIRED";
+
+                if (sub.User != null)
+                {
+                    sub.User.SubscriptionStatus = "EXPIRED";
+                }
+            }
+
+            return await _db.SaveChangesAsync();
+        }
         public async Task<UserSubscription?> GetUserActiveSubscriptionAsync(int userId)
         {
             var subscriptions = await GetAllAsync(

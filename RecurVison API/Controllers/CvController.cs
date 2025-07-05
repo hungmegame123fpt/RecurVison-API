@@ -1,13 +1,16 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
 using Service.Interface;
+using System.Security.Claims;
 
 namespace RecurVison_API.Controllers
 {
+    [Authorize(AuthenticationSchemes = "CookieAuth")]
     [Route("api/[controller]")]
     [ApiController]
     public class CvController : ControllerBase
@@ -121,10 +124,22 @@ namespace RecurVison_API.Controllers
             var cvs = await _cvService.GetAllCvAsync();
             return Ok(cvs);
         }
-        [HttpGet("user/{userId}")]
+        [HttpGet("admin/{userId}")]
         public async Task<ActionResult<CvListResponse>> GetUserCvs(int userId)
         {
             var response = await _cvService.GetUserCvsAsync(userId);
+            return response.Success ? Ok(response) : StatusCode(500, response);
+        }
+        [HttpGet("user")]
+        public async Task<ActionResult<CvListResponse>> GetUserCvs()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User not authenticated.");
+            }
+
+            var response = await _cvService.GetUserCvsAsync(int.Parse(userId));
             return response.Success ? Ok(response) : StatusCode(500, response);
         }
 

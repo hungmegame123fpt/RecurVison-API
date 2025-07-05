@@ -118,6 +118,7 @@ namespace Service.Interface
             var users = await _userRepository.GetAllAsync(filter, includeProperties);
             return _mapper.Map<List<UserDto>>(users);
         }
+
         //public async Task<byte[]> ExportUsersAsync(string format = "csv")
         //{
         //    var users = await _userRepository.GetAllAsync();

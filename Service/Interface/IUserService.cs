@@ -12,6 +12,7 @@ namespace Service.Interface
 {
     public interface IUserService
     {
+
         Task<PaginatedResult<UserDto>> GetUsersAsync(UserFilterDto filter);
         Task<UserDto?> GetUserByIdAsync(int userId);
         Task<UserDto> UpdateUserAsync(int userId, UpdateUserDto updateDto);

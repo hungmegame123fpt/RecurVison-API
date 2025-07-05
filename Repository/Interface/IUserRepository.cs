@@ -12,6 +12,7 @@ namespace Repository.Interface
 {
     public interface IUserRepository
     {
+        Task<int> CancelUsersNotLoggedInSinceAsync(DateTime cutoffDate);
         Task<List<User>> GetAllAsync(bool includeRelations = false);
         Task<List<User>> GetAllAsync(Expression<Func<User, bool>>? filter = null, string? includeProperties = null);
         Task<User?> GetByIdAsync(int? id);

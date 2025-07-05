@@ -156,5 +156,19 @@ namespace Repository
                 .OrderByDescending(u => u.CreatedAt)
                 .ToListAsync();
         }
+        public async Task<int> CancelUsersNotLoggedInSinceAsync(DateTime cutoffDate)
+        {
+            var usersToCancel = await _context.Users
+                .Where(u => u.LastLogin != null && u.LastLogin < cutoffDate && u.AccountStatus != "Cancelled")
+                .ToListAsync();
+
+            foreach (var user in usersToCancel)
+            {
+                user.AccountStatus = "Cancelled";
+            }
+
+            await _context.SaveChangesAsync();
+            return usersToCancel.Count;
+        }
     }
 }

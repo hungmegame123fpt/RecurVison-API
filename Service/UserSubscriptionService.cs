@@ -28,6 +28,10 @@ namespace Service
             _mapper = mapper;
             _logger = logger;
         }
+        public async Task<int> ExpireEndedSubscriptionsAsync()
+        {
+            return await _unitOfWork.UserSubscriptionRepository.ExpireEndedSubscriptionsAsync();
+        }
         public async Task<UserSubscriptionDto?> GetUserActiveSubscriptionAsync(int userId)
         {
             try

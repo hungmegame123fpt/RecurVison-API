@@ -66,5 +66,11 @@ namespace RecurVison_API.Controllers
             var updated = await _cvVersionService.UpdatePlainTextAsync(id, plainText);
             return Ok(updated);
         }
+        [HttpGet("cv-imports")]
+        public async Task<IActionResult> GetCvImportStats()
+        {
+            var stats = await _cvVersionService.GetImportStatsAsync();
+            return Ok(stats);
+        }
     }
 }

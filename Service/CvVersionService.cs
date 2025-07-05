@@ -73,5 +73,9 @@ namespace Service
             await _unitOfWork.SaveChanges();
             return _mapper.Map<CvVersionDTO>(version);
         }
+        public async Task<CvImportStatsDto> GetImportStatsAsync()
+        {
+            return await _unitOfWork.CvVersionRepository.GetCvImportStatsAsync();
+        }
     }
 }

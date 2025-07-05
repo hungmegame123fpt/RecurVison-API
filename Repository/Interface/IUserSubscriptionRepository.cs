@@ -11,6 +11,7 @@ namespace Repository.Interface
     public interface IUserSubscriptionRepository : IBaseRepository<UserSubscription>
     {
         Task<List<int?>> GetPremiumUserIds();
+        Task<int> ExpireEndedSubscriptionsAsync();
         Task<UserSubscription?> GetUserActiveSubscriptionAsync(int userId);
         Task<List<UserSubscription>> GetUserSubscriptionHistoryAsync(int userId);
         Task<List<UserSubscription>> GetSubscriptionsByPlanAsync(int planId);

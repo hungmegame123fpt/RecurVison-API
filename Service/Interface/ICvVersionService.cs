@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.CvVersion;
+﻿using BusinessObject.DTO.CV;
+using BusinessObject.DTO.CvVersion;
 using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
@@ -16,5 +17,6 @@ namespace Service.Interface
         Task<CvVersionDTO> UpdateAsync(CvVersionDTO version);
         Task DeleteAsync(int id);
         Task<CvVersionDTO> UpdatePlainTextAsync(int id, string plainText);
+        Task<CvImportStatsDto> GetImportStatsAsync();
     }
 }

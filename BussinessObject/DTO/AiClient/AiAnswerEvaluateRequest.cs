@@ -19,7 +19,7 @@ namespace BusinessObject.DTO.AiClient
         public string JobDescription { get; set; } = string.Empty;
 
         [JsonProperty("previous_questions")]
-        public List<string> PreviousQuestions { get; set; } = new();
+        public List<string>? PreviousQuestions { get; set; } = new();
 
         [JsonProperty("answer_text")]
         public string AnswerText { get; set; } = string.Empty;

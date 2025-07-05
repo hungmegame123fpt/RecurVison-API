@@ -177,8 +177,7 @@ namespace Service
         {
               var result =  await _unitOfWork.UserSubscriptionRepository.CancelSubscriptionAsync(subscriptionId);
                 return result;
-        }
-
+        }      
         public async Task<bool> RenewSubscriptionAsync(int subscriptionId)
         {
             await _unitOfWork.BeginTransactionAsync();

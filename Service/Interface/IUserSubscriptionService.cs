@@ -10,6 +10,7 @@ namespace Service.Interface
 {
     public interface IUserSubscriptionService
     {
+        Task<int> ExpireEndedSubscriptionsAsync();
         Task<UserSubscriptionDto?> GetUserActiveSubscriptionAsync(int userId);
         Task<List<UserSubscriptionDto>> GetUserSubscriptionHistoryAsync(int userId);
         Task<List<UserSubscriptionDto>> GetSubscriptionsByPlanAsync(int planId);
