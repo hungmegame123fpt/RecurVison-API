@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Entities;
 using Repository.Interface;
+using Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Service
 {
-    public class UserRole
+    public class UserRoleService : IUserRoleService
     {
         private readonly IUserRoleRepository _roleRepository;
 
-        public UserRole(IUserRoleRepository roleRepository)
+        public UserRoleService(IUserRoleRepository roleRepository)
         {
             _roleRepository = roleRepository;
         }

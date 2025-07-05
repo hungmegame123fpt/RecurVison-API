@@ -122,6 +122,8 @@ namespace RecurVison_API
             builder.Services.AddScoped<ISubscriptionPaymentService, SubscriptionPaymentService>();
             builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
             builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+            builder.Services.AddScoped<IUserRoleService, UserRoleService>();
             builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
             builder.Services.AddScoped<IInterviewQuestionService, InterviewQuestionService>();
             builder.Services.AddScoped<IVirtualInterviewService, VirtualInterviewService>();
