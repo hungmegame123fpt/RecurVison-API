@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
 using Repository;
@@ -116,6 +117,7 @@ namespace Service
                 var existingUser = await _userRepository.GetByGoogleIdAsync(payload.Subject);
                 if (existingUser != null)
                 {
+                    existingUser.EmailVerified = payload.EmailVerified;
                     existingUser.LastLogin = DateTime.UtcNow;
                     await _userRepository.UpdateAsync(existingUser);
 
@@ -150,6 +152,9 @@ namespace Service
                     LastName = payload.FamilyName ?? "",
                     GoogleId = payload.Subject,
                     EmailVerified = payload.EmailVerified,
+                    AccountStatus = "Active",
+                    LastLogin = DateTime.UtcNow,
+                    
                 };
 
                 var createdUser = await _userRepository.CreateAsync(newUser);

@@ -20,8 +20,6 @@ namespace RecurVison_API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var configuration = builder.Configuration;
-            // Add services to the container.
             builder.Services.AddDbContext<RecurVisionV1Context>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
@@ -73,8 +71,8 @@ namespace RecurVison_API
                 })
                 .AddGoogle(options =>
                 {
-                    options.ClientId = configuration["Authentication:Google:ClientId"];
-                    options.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
                     options.Scope.Add("profile");
                     options.Scope.Add("email");
 
