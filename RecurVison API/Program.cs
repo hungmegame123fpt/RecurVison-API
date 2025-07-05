@@ -67,9 +67,9 @@ namespace RecurVison_API
                     //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     //options.Cookie.SameSite = SameSiteMode.Strict;
                     //For testing
-                    options.Cookie.HttpOnly = false; // allow JS (Swagger) access
-                    options.Cookie.SameSite = SameSiteMode.Lax; // or Lax for dev
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.None; // Set to Always in production with HTTPS
+                    options.Cookie.HttpOnly = false;
+                    options.Cookie.SameSite = SameSiteMode.None; 
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 })
                 .AddGoogle(options =>
                 {
