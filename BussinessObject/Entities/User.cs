@@ -40,7 +40,7 @@ public partial class User
     public virtual ICollection<UserCharacteristic> UserCharacteristics { get; set; } = new List<UserCharacteristic>();
 
     public virtual ICollection<UserRole> UserRoleAssignedByNavigations { get; set; } = new List<UserRole>();
-
+    [JsonIgnore]
     public virtual ICollection<UserRole> UserRoleUsers { get; set; } = new List<UserRole>();
     [JsonIgnore]
     public virtual ICollection<UserSubscription> UserSubscriptions { get; set; } = new List<UserSubscription>();

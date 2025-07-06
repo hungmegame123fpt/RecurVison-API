@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace BusinessObject.Entities;
 
@@ -20,6 +21,6 @@ public partial class UserRole
     public virtual User? AssignedByNavigation { get; set; }
 
     public virtual Role Role { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual User User { get; set; } = null!;
 }
