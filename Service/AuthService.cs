@@ -64,6 +64,7 @@ namespace Service
 
                 // Save UserRole
                 await _unitOfWork.UserRoleRepository.CreateAsync(userRole);
+                await _unitOfWork.UserRoleRepository.SaveChangesAsync();
                 return new APIResponse<User>
                 {
                     Success = true,
@@ -168,7 +169,16 @@ namespace Service
                 };
 
                 var createdUser = await _unitOfWork.UserRepository.CreateAsync(newUser);
-
+                var userRole = new UserRole
+                {
+                    UserId = createdUser.UserId,
+                    RoleId = 2,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = null,
+                    IsPrimary = true
+                };
+                await _unitOfWork.UserRoleRepository.CreateAsync(userRole);
+                await _unitOfWork.UserRoleRepository.SaveChangesAsync();
                 return new APIResponse<User>
                 {
                     Success = true,
