@@ -17,13 +17,13 @@ namespace Service
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IOTPService _otpService;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration, IOTPService otpService)
+        public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration, IOTPService otpService)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _configuration = configuration;
             _otpService = otpService;
         }
@@ -32,7 +32,7 @@ namespace Service
         {
             try
             {
-                if (await _userRepository.EmailExistsAsync(registerDto.Email))
+                if (await _unitOfWork.UserRepository.EmailExistsAsync(registerDto.Email))
                 {
                     return new APIResponse<User>
                     {
@@ -52,8 +52,18 @@ namespace Service
                     EmailVerified = false,
                 };
 
-                var createdUser = await _userRepository.CreateAsync(user);
+                var createdUser = await _unitOfWork.UserRepository.CreateAsync(user);
+                var userRole = new UserRole
+                {
+                    UserId = createdUser.UserId,
+                    RoleId = 2,                      
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = null,              
+                    IsPrimary = true
+                };
 
+                // Save UserRole
+                await _unitOfWork.UserRoleRepository.CreateAsync(userRole);
                 return new APIResponse<User>
                 {
                     Success = true,
@@ -76,7 +86,7 @@ namespace Service
         {
             try
             {
-                var user = await _userRepository.GetByEmailAsync(loginDto.Email.ToLower());
+                var user = await _unitOfWork.UserRepository.GetByEmailAsync(loginDto.Email.ToLower());
 
                 if (user == null || !VerifyPassword(loginDto.Password, user.Password))
                 {
@@ -88,7 +98,7 @@ namespace Service
                 }
 
                 user.LastLogin = DateTime.UtcNow;
-                await _userRepository.UpdateAsync(user);
+                await _unitOfWork.UserRepository.UpdateAsync(user);
 
                 return new APIResponse<User>
                 {
@@ -114,12 +124,12 @@ namespace Service
             {
                 var payload = await GoogleJsonWebSignature.ValidateAsync(googleAuthDto.IdToken);
 
-                var existingUser = await _userRepository.GetByGoogleIdAsync(payload.Subject);
+                var existingUser = await _unitOfWork.UserRepository.GetByGoogleIdAsync(payload.Subject);
                 if (existingUser != null)
                 {
                     existingUser.EmailVerified = payload.EmailVerified;
                     existingUser.LastLogin = DateTime.UtcNow;
-                    await _userRepository.UpdateAsync(existingUser);
+                    await _unitOfWork.UserRepository.UpdateAsync(existingUser);
 
                     return new APIResponse<User>
                     {
@@ -129,13 +139,13 @@ namespace Service
                     };
                 }
 
-                var emailUser = await _userRepository.GetByEmailAsync(payload.Email);
+                var emailUser = await _unitOfWork.UserRepository.GetByEmailAsync(payload.Email);
                 if (emailUser != null)
                 {
                     emailUser.GoogleId = payload.Subject;
                     emailUser.EmailVerified = payload.EmailVerified;
                     emailUser.LastLogin = DateTime.UtcNow;
-                    await _userRepository.UpdateAsync(emailUser);
+                    await _unitOfWork.UserRepository.UpdateAsync(emailUser);
 
                     return new APIResponse<User>
                     {
@@ -157,7 +167,7 @@ namespace Service
                     
                 };
 
-                var createdUser = await _userRepository.CreateAsync(newUser);
+                var createdUser = await _unitOfWork.UserRepository.CreateAsync(newUser);
 
                 return new APIResponse<User>
                 {
@@ -181,7 +191,7 @@ namespace Service
         {
             try
             {
-                var user = await _userRepository.GetByEmailAsync(email.ToLower());
+                var user = await _unitOfWork.UserRepository.GetByEmailAsync(email.ToLower());
                 if (user == null)
                 {
                     return new APIResponse<string>
@@ -222,11 +232,11 @@ namespace Service
 
                 if (isValid)
                 {
-                    var user = await _userRepository.GetByEmailAsync(verifyOtpDto.Email.ToLower());
+                    var user = await _unitOfWork.UserRepository.GetByEmailAsync(verifyOtpDto.Email.ToLower());
                     if (user != null)
                     {
                         user.EmailVerified = true;
-                        await _userRepository.UpdateAsync(user);
+                        await _unitOfWork.UserRepository.UpdateAsync(user);
                     }
                 }
 
@@ -252,7 +262,7 @@ namespace Service
         {
             try
             {
-                var user = await _userRepository.GetByIdAsync(userId);
+                var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
                 if (user == null)
                 {
                     return new APIResponse<bool>
@@ -272,7 +282,7 @@ namespace Service
                 }
 
                 user.Password = HashPassword(changePasswordDto.NewPassword);
-                await _userRepository.UpdateAsync(user);
+                await _unitOfWork.UserRepository.UpdateAsync(user);
 
                 return new APIResponse<bool>
                 {
@@ -296,7 +306,7 @@ namespace Service
         {
             try
             {
-                var user = await _userRepository.GetByIdAsync(userId);
+                var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
                 return new APIResponse<User?>
                 {
                     Success = true,

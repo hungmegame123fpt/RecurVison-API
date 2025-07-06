@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface IUserRoleRepository
+    public interface IUserRoleRepository : IBaseRepository<UserRole>
     {
         Task<string> CheckRole(User user);
     }

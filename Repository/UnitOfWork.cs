@@ -27,6 +27,7 @@ namespace Repository
         public IJobFieldRepository JobFieldRepository { get; set; }
         public ICvAnalysisRepository CvAnalysisRepository { get; set; }
         public ICvVersionRepository CvVersionRepository { get; set; }
+        public IUserRoleRepository UserRoleRepository { get; set; }
         public UnitOfWork(RecurVisionV1Context db, IConfiguration configuration)
         {
             _db = db;
@@ -35,6 +36,7 @@ namespace Repository
             CVRepository = new CVRepository(_db);
             SubscriptionPlanRepository = new SubscriptionPlanRepository(_db);
             UserRepository = new UserRepository(_db);
+            UserRoleRepository = new UserRoleRepository(_db);
             UserSubscriptionRepository = new UserSubscriptionRepository(_db);
             JobFieldRepository = new JobFieldRepository(_db);
             CvAnalysisRepository = new CvAnalysisRepository(_db);

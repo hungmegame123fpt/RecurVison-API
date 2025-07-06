@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class UserRoleRepository : IUserRoleRepository
+    public class UserRoleRepository : BaseRepository<UserRole>, IUserRoleRepository
     {
         private readonly RecurVisionV1Context _context;
 
-        public UserRoleRepository(RecurVisionV1Context context)
+        public UserRoleRepository(RecurVisionV1Context db) : base(db)
         {
-            _context = context;
         }
         public async Task<string> CheckRole(User user)
         {

@@ -11,6 +11,7 @@ namespace Repository.Interface
     {
         ICVRepository CVRepository { get; }
         IUserRepository UserRepository { get; }
+        IUserRoleRepository UserRoleRepository { get; }
         IUserSubscriptionRepository UserSubscriptionRepository { get; }
         ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
         IVirtualInterviewRepository VirtualInterviewRepository { get;  }
