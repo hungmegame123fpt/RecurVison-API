@@ -12,14 +12,14 @@ namespace Repository
 {
     public class UserRoleRepository : BaseRepository<UserRole>, IUserRoleRepository
     {
-        private readonly RecurVisionV1Context _context;
+
 
         public UserRoleRepository(RecurVisionV1Context db) : base(db)
         {
         }
         public async Task<string> CheckRole(User user)
         {
-           return await _context.UserRoles
+           return await _db.UserRoles
             .Include(ur => ur.Role)
             .Where(ur => ur.UserId == user.UserId)
             .Select(ur => ur.Role.RoleName)
