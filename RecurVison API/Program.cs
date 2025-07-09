@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Net.payOS;
 using Microsoft.AspNetCore.Authentication.Google;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace RecurVison_API
 {
@@ -29,6 +30,7 @@ namespace RecurVison_API
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 }); ;
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
