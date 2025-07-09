@@ -25,6 +25,8 @@ namespace Service
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            DateTime? lastQuotaResetDate = null;
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -46,10 +48,19 @@ namespace Service
 
                     if (cancelledUsers > 0)
                         _logger.LogInformation($"{cancelledUsers} users canceled due to 2+ months inactivity at {DateTime.UtcNow}");
+
+                    // 3. Reset quotas once a day (at midnight UTC)
+                    var now = DateTime.UtcNow;
+                    if (lastQuotaResetDate == null || lastQuotaResetDate.Value.Date != now.Date)
+                    {
+                        var resetCount = await subscriptionService.ResetUserQuotasAsync(); // create this method
+                        _logger.LogInformation($"Reset quotas for {resetCount} subscriptions at {now}");
+                        lastQuotaResetDate = now.Date;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error occurred while running subscription expiry background task.");
+                    _logger.LogError(ex, "Error occurred in background task.");
                 }
 
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);

@@ -19,7 +19,9 @@ public partial class SubscriptionPlan
     public string? Features { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
-
+    public int? MaxTextInterviewPerDay { get; set; } = 5;
+    public int? MaxVoiceInterviewPerMonth { get; set; } = 5;
+    public int? MaxCvsAllowed { get; set; } = 5;
     public bool? IsActive { get; set; }
     [JsonIgnore]
     public virtual ICollection<UserSubscription> UserSubscriptions { get; set; } = new List<UserSubscription>();

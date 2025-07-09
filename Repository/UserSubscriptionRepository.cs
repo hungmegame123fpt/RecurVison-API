@@ -45,7 +45,7 @@ namespace Repository
 
             return await _db.SaveChangesAsync();
         }
-        public async Task<UserSubscription?> GetUserActiveSubscriptionAsync(int userId)
+        public async Task<UserSubscription?> GetUserActiveSubscriptionAsync(int? userId)
         {
             var subscriptions = await GetAllAsync(
                 filter: s => s.UserId == userId &&

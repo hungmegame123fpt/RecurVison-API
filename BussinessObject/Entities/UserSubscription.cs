@@ -21,6 +21,10 @@ public partial class UserSubscription
     public string? PaymentStatus { get; set; }
 
     public DateTime? LastPaymentDate { get; set; }
+    public int? InterviewPerDayRemaining { get; set; } = 5;
+    public int? VoiceInterviewRemaining{ get; set; } = 5;
+    public int? CvRemaining { get; set; } = 5;
+    public DateTime? LastQuotaResetDate { get; set; } = DateTime.Now;
     [JsonIgnore]
 
     public virtual SubscriptionPlan Plan { get; set; } = null!;

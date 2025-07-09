@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessObject.DTO.UserSubscription;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Repository;
 using Repository.Interface;
@@ -8,6 +9,7 @@ using Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,15 +20,17 @@ namespace Service
         private IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<SubscriptionPlanService> _logger;
-
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public UserSubscriptionService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<SubscriptionPlanService> logger)
+            ILogger<SubscriptionPlanService> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<int> ExpireEndedSubscriptionsAsync()
         {
@@ -249,6 +253,25 @@ namespace Service
                 throw;
             }
         }
+        public async Task<int> ResetUserQuotasAsync()
+        {
+            var userId = GetCurrentUserId();
+            var sub = await _unitOfWork.UserSubscriptionRepository
+                .GetUserActiveSubscriptionAsync(userId); 
+            var plan = sub.Plan;
+            if (plan == null)
+            {
+                return 0;
+            }
+                sub.CvRemaining = plan.MaxCvsAllowed;
+                sub.InterviewPerDayRemaining = plan.MaxTextInterviewPerDay;
+                sub.VoiceInterviewRemaining = plan.MaxVoiceInterviewPerMonth;
+
+                sub.LastQuotaResetDate = DateTime.UtcNow;
+            await _unitOfWork.SaveChanges();
+            return 1;
+        }
+
         public async Task<PremiumRateStatsDto> GetPremiumRateStatsAsync()
         {
             DateTime today = DateTime.UtcNow.Date;
@@ -271,7 +294,16 @@ namespace Service
 
             return stats;
         }
+        public int? GetCurrentUserId()
+        {
+            var user = _httpContextAccessor.HttpContext?.User;
 
+            if (user == null)
+                return null;
+
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            return userIdClaim != null ? int.Parse(userIdClaim.Value) : (int?)null;
+        }
         private PremiumRateDetail CalculateRate(IEnumerable<User> users, List<int?> premiumUserIds)
         {
             var total = users.Count();
@@ -284,5 +316,6 @@ namespace Service
                 Rate = total == 0 ? 0 : Math.Round((decimal)premium / total * 100, 2)
             };
         }
+
     }
 }

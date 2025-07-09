@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO;
+using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
 using iText.IO.Font.Constants;
@@ -25,6 +26,7 @@ namespace Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentParserService _documentParserService;
+        private readonly IAIClient _aiClient;
         private readonly ILogger<CVService> _logger;
 
         private readonly string[] _supportedImportFormats = { ".pdf", ".docx", ".doc", ".txt" };
@@ -34,12 +36,14 @@ namespace Service
             IUnitOfWork unitOfWork,
             IFileStorageService fileStorageService,
             IDocumentParserService documentParserService,
-            ILogger<CVService> logger)
+            ILogger<CVService> logger,
+            IAIClient aiClient)
         {
             _unitOfWork = unitOfWork;
             _fileStorageService = fileStorageService;
             _documentParserService = documentParserService;
             _logger = logger;
+            _aiClient = aiClient;
         }
         public async Task<List<CVDto>> GetAllCvAsync()
         {
@@ -162,8 +166,46 @@ namespace Service
                 };
             }
         }
+		public async Task<CvAnalysisResult> AnalyzeCvAsync(CvAnalysisResultRequest cvAnalysis)
+		{
+			// 1. Check CV exists
+			var cv = await _unitOfWork.CVRepository.GetByIdAsync(cvAnalysis.CvId);
+			if (cv == null)
+				throw new Exception("CV not found");
 
-        public async Task<CVExportResponse> ExportCvAsync(CVExportRequest request)
+			// 2. Check user subscription (optional: quota check if needed)
+
+			// 3. Call AI Client
+			var aiResponse = await _aiClient.AnalyzeCvAsync(cvAnalysis.CvId, cvAnalysis.jdFile);
+			if (aiResponse?.Data == null)
+				throw new Exception("Failed to analyze CV via AI");
+
+			var analysisData = aiResponse.Data.CvAnalysisResult;
+
+			// 4. Map AI response to your CvAnalysisResult entity
+			var result = new CvAnalysisResult
+			{
+				Name = analysisData.Name,
+				Email = analysisData.Email,
+				Phone = analysisData.Phone,
+				Summary = analysisData.Summary,
+				JdAlignment = aiResponse.Data.JdAlignment,
+				CreatedAt = DateTime.UtcNow,
+				Skills = analysisData.Skills
+	                    ?.Select(skill => new CvSkill { SkillName = skill.SkillName })
+	                    .ToList(),
+				Education = analysisData.Education?.ToList() ?? new List<CvEducation>(),
+				Projects = analysisData.Projects?.ToList() ?? new List<CvProject>(),
+				Certifications = analysisData.Certifications?.ToList() ?? new List<CvCertification>()
+			};
+
+			// 5. Save to DB
+			await _unitOfWork.CvAnalysisResult.CreateAsync(result);
+			await _unitOfWork.CvAnalysisResult.SaveChangesAsync();
+
+			return result;
+		}
+		public async Task<CVExportResponse> ExportCvAsync(CVExportRequest request)
         {
             try
             {

@@ -1,6 +1,8 @@
 ﻿using BusinessObject.DTO;
+using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,9 @@ namespace Service.Interface
     public interface ICVService
     {
         Task<CVImportResponse> ImportCvAsync(CVImportRequest request);
-        Task<CVExportResponse> ExportCvAsync(CVExportRequest request);
+        Task<CvAnalysisResult> AnalyzeCvAsync(CvAnalysisResultRequest cvAnalysis);
+
+		Task<CVExportResponse> ExportCvAsync(CVExportRequest request);
         Task<List<string>> GetSupportedImportFormats();
         Task<List<string>> GetSupportedExportFormats();
         Task<ParsedDocumentResult> ParseCvAsync(int userId, int cvId);

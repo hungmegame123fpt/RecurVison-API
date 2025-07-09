@@ -1,4 +1,6 @@
 ﻿using BusinessObject.DTO.AiClient;
+using BusinessObject.Entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,8 @@ namespace Service.Interface
     {
         Task<AiSessionResponse?> StartSessionAsync(AiSessionRequest request);
         Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request);
+        Task<AiCvAnalysisResponse> AnalyzeCvAsync(int Cvid, IFormFile jdFile);
 
-    }
+
+	}
 }

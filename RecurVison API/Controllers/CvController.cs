@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO;
+using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -43,7 +44,46 @@ namespace RecurVison_API.Controllers
 
             return BadRequest(result);
         }
-        [HttpPost("cv-version/{cvVersionId}/upload-analysis")]
+		[HttpPost("analyze")]
+		[Consumes("multipart/form-data")]
+		public async Task<IActionResult> AnalyzeCV([FromForm] CvAnalysisResultRequest cvAnalysis)
+		{
+			if (cvAnalysis.jdFile == null || cvAnalysis.jdFile.Length == 0)
+			{
+				return BadRequest("Job description file is required.");
+			}
+
+			//// Get current userId from JWT token claims
+			//var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			//if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+			//{
+			//	return Unauthorized("Invalid or missing user ID in token.");
+			//}
+
+			try
+			{
+				var result = await _cvService.AnalyzeCvAsync(cvAnalysis);
+
+				return Ok(result);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				return Forbid(ex.Message);
+			}
+			catch (FileNotFoundException ex)
+			{
+				return NotFound(ex.Message);
+			}
+			catch (InvalidOperationException ex)
+			{
+				return BadRequest(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, $"An error occurred during analysis: {ex.Message}");
+			}
+		}
+		[HttpPost("cv-version/{cvVersionId}/upload-analysis")]
         public async Task<IActionResult> UploadCvAnalysisJson([FromForm] CvAnalysisRequest request)
         {
             var result = await _cvService.ImportCvAnalysisJsonAsync(request);

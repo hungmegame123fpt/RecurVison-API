@@ -53,6 +53,12 @@ public partial class RecurVisionV1Context : DbContext
     public DbSet<JobField> JobFields { get; set; }
     public DbSet<UserFieldPreference> UserFieldPreferences { get; set; }
     public DbSet<CvAnalysisFile> CvAnalysisFiles { get; set; }
+    public DbSet<CvAnalysisResult> CvAnalysisResults { get; set; }
+    public DbSet<CvSkill> CvSkills { get; set; }
+    public DbSet<CvEducation> CvEducations { get; set; }
+    public DbSet<CvProject> CvProjects { get; set; }
+    public DbSet<CvProjectTechStack> CvProjectTechStacks { get; set; }
+    public DbSet<CvCertification> CvCertifications { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=tcp:recruvisionserver.database.windows.net,1433;Initial Catalog=RecurVision_V1;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
@@ -419,6 +425,10 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.UserType)
                 .HasMaxLength(255)
                 .HasColumnName("user_type");
+            entity.Property(e => e.MaxTextInterviewPerDay).HasColumnType("int");
+            entity.Property(e => e.MaxVoiceInterviewPerMonth).HasColumnType("int");
+            entity.Property(e => e.MaxCvsAllowed).HasColumnType("int");
+
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -466,8 +476,104 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.SubscriptionStatus)
                 .HasMaxLength(255)
                 .HasColumnName("subscription_status");
+
+        });
+        modelBuilder.Entity<CvAnalysisResult>(entity =>
+        {
+            entity.ToTable("CvAnalysisResult");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.Summary).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.CvUrl).HasMaxLength(500);
+            entity.Property(e => e.JobDescriptionFileName).HasMaxLength(255);
+            entity.Property(e => e.JdAlignment).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.ImprovementSuggestions).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
         });
 
+        // CvSkill
+        modelBuilder.Entity<CvSkill>(entity =>
+        {
+            entity.ToTable("CvSkill");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.SkillName).HasMaxLength(100).IsRequired();
+			entity.HasOne<CvAnalysisResult>()
+				 .WithMany(e => e.Skills)
+				 .HasForeignKey(e => e.CvAnalysisResultId)
+				 .OnDelete(DeleteBehavior.Cascade);
+		});
+
+        // CvEducation
+        modelBuilder.Entity<CvEducation>(entity =>
+        {
+            entity.ToTable("CvEducation");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Degree).HasMaxLength(255);
+            entity.Property(e => e.Institution).HasMaxLength(255);
+            entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
+
+            entity.HasOne<CvAnalysisResult>()
+                  .WithMany(e => e.Education)
+                  .HasForeignKey(e => e.CvAnalysisResultId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CvProject
+        modelBuilder.Entity<CvProject>(entity =>
+        {
+            entity.ToTable("CvProject");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Title).HasMaxLength(255);
+            entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
+
+            entity.HasOne<CvAnalysisResult>()
+                  .WithMany(e => e.Projects)
+                  .HasForeignKey(e => e.CvAnalysisResultId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CvProjectTechStack
+        modelBuilder.Entity<CvProjectTechStack>(entity =>
+        {
+            entity.ToTable("CvProjectTechStack");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.TechName).HasMaxLength(100);
+
+            entity.HasOne<CvProject>()
+                  .WithMany(p => p.TechStacks)
+                  .HasForeignKey(e => e.CvProjectId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CvCertification
+        modelBuilder.Entity<CvCertification>(entity =>
+        {
+            entity.ToTable("CvCertification");
+
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name).HasMaxLength(255);
+            entity.Property(e => e.Issuer).HasMaxLength(255);
+            entity.Property(e => e.TimePeriod).HasMaxLength(100);
+            entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
+
+            entity.HasOne<CvAnalysisResult>()
+                  .WithMany(e => e.Certifications)
+                  .HasForeignKey(e => e.CvAnalysisResultId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<UserCharacteristic>(entity =>
         {
             entity.HasKey(e => e.CharacteristicId).HasName("PK__USER_CHA__2EA0BA27A84A9300");
@@ -574,7 +680,10 @@ public partial class RecurVisionV1Context : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("start_date");
             entity.Property(e => e.UserId).HasColumnName("user_id");
-
+            entity.Property(e => e.InterviewPerDayRemaining).HasColumnType("int");
+            entity.Property(e => e.VoiceInterviewRemaining).HasColumnType("int");
+            entity.Property(e => e.CvRemaining).HasColumnType("int");
+            entity.Property(e => e.LastQuotaResetDate).HasColumnType("datetime");
             entity.HasOne(d => d.Plan).WithMany(p => p.UserSubscriptions)
                 .HasForeignKey(d => d.PlanId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

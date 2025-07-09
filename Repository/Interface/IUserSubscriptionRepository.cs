@@ -12,7 +12,7 @@ namespace Repository.Interface
     {
         Task<List<int?>> GetPremiumUserIds();
         Task<int> ExpireEndedSubscriptionsAsync();
-        Task<UserSubscription?> GetUserActiveSubscriptionAsync(int userId);
+        Task<UserSubscription?> GetUserActiveSubscriptionAsync(int? userId);
         Task<List<UserSubscription>> GetUserSubscriptionHistoryAsync(int userId);
         Task<List<UserSubscription>> GetSubscriptionsByPlanAsync(int planId);
         Task<List<UserSubscription>> GetExpiredSubscriptionsAsync();

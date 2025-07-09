@@ -20,6 +20,8 @@ namespace Repository.Interface
         IJobFieldRepository JobFieldRepository { get;  }
         ICvAnalysisRepository CvAnalysisRepository { get;  }
         ICvVersionRepository CvVersionRepository { get;  }
+		ICvAnalysisResultRepository CvAnalysisResult { get;  }
+
         Task SaveChanges();
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task CommitAsync();

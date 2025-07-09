@@ -130,6 +130,7 @@ namespace RecurVison_API
             builder.Services.AddScoped<IAIClient, AIClient>();
             builder.Services.AddHttpClient<IAIClient, AIClient>();
             builder.Services.AddHostedService<SubscriptionExpiryService>();
+            builder.Services.AddHttpContextAccessor();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())

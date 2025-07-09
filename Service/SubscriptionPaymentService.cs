@@ -66,7 +66,11 @@ namespace Service
                 EndDate = null,
                 IsAutoRenew = request.IsAutoRenew,
                 PaymentStatus = "PENDING",
-                LastPaymentDate = null
+                LastPaymentDate = null,
+                CvRemaining = plan.MaxCvsAllowed,
+                InterviewPerDayRemaining = plan.MaxTextInterviewPerDay,
+                VoiceInterviewRemaining = plan.MaxVoiceInterviewPerMonth,
+                LastQuotaResetDate = DateTime.Now,
             };
 
             await _unitOfWork.UserSubscriptionRepository.CreateAsync(subscription);
