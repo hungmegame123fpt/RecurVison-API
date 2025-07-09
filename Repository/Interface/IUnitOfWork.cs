@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace Repository.Interface
         ICvAnalysisRepository CvAnalysisRepository { get;  }
         ICvVersionRepository CvVersionRepository { get;  }
 		ICvAnalysisResultRepository CvAnalysisResult { get;  }
+        IBaseRepository<JobDescription> JobDescriptionRepository { get; }
 
         Task SaveChanges();
         Task<IDbContextTransaction> BeginTransactionAsync();

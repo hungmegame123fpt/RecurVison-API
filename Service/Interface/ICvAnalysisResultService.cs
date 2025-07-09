@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTO.CV;
+using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace Service.Interface
     public interface  ICvAnalysisResultService
     {
         Task<CvAnalysisResult?> GetLatestAnalysisByCvIdAsync(int cvId);
+        Task<List<CvAnalysisSummaryDto>> GetAnalysisSummariesAsync(int userId);
     }
 }

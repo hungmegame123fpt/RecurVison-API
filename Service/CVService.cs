@@ -2,6 +2,7 @@
 using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml.Spreadsheet;
 using iText.IO.Font.Constants;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
@@ -172,11 +173,21 @@ namespace Service
 			var cv = await _unitOfWork.CVRepository.GetByIdAsync(cvAnalysis.CvId);
 			if (cv == null)
 				throw new Exception("CV not found");
+            var originalFileName = cvAnalysis.jdFile.FileName; // This is the original name from the user
+            var cloudinaryFileName = GenerateUniqueFileName(originalFileName); // Unique name for Cloudinary
+            var filePath = await _fileStorageService.SaveFileAsync(cvAnalysis.jdFile, cloudinaryFileName);
+            var jobDescription = new JobDescription
+            {
+                FileName = originalFileName,           
+                FileUrl = filePath,                   
+                UploadedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.JobDescriptionRepository.CreateAsync(jobDescription);
+            await _unitOfWork.SaveChanges();
+            // 2. Check user subscription (optional: quota check if needed)
 
-			// 2. Check user subscription (optional: quota check if needed)
-
-			// 3. Call AI Client
-			var aiResponse = await _aiClient.AnalyzeCvAsync(cvAnalysis.CvId, cvAnalysis.jdFile);
+            // 3. Call AI Client
+            var aiResponse = await _aiClient.AnalyzeCvAsync(cvAnalysis.CvId, cvAnalysis.jdFile);
 			if (aiResponse?.Data == null)
 				throw new Exception("Failed to analyze CV via AI");
 
@@ -190,9 +201,11 @@ namespace Service
                 Phone = analysisData.Phone,
                 Summary = analysisData.Summary,
                 JdAlignment = aiResponse.Data.JdAlignment,
+                JobDescriptionId = jobDescription.Id,
                 CreatedAt = DateTime.UtcNow,
                 CvId = cv.CvId,
                 Cv = cv,
+                JobDescription = jobDescription
             };
 
             // Now assign navigation-based collections

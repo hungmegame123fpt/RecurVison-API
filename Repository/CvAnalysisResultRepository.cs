@@ -27,5 +27,9 @@ namespace Repository
                 .OrderByDescending(r => r.CreatedAt)
                 .FirstOrDefaultAsync();
         }
+        public IQueryable<CvAnalysisResult> GetQueryable()
+        {
+            return _db.Set<CvAnalysisResult>().AsQueryable();
+        }
     }
 }

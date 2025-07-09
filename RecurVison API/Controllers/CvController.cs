@@ -81,6 +81,16 @@ namespace RecurVison_API.Controllers
 				return StatusCode(500, $"An error occurred during analysis: {ex.Message}");
 			}
 		}
+        [HttpGet("analysis-summaries")]
+        [ProducesResponseType(typeof(List<CvAnalysisSummaryDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAnalysisSummaries()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("User ID not found in claims.");
+            var results = await _analysisService.GetAnalysisSummariesAsync(userId);
+            return Ok(results);
+        }
         [HttpGet("latest-analysis/{cvId}")]
         [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

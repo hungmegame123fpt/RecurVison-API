@@ -490,13 +490,15 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.Phone).HasMaxLength(50);
             entity.Property(e => e.Summary).HasColumnType("nvarchar(max)");
-            entity.Property(e => e.JobDescriptionFileName).HasMaxLength(255);
             entity.Property(e => e.JdAlignment).HasColumnType("nvarchar(max)");
-            entity.Property(e => e.ImprovementSuggestions).HasColumnType("nvarchar(max)");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
             entity.HasOne(e => e.Cv)
                   .WithMany(r => r.CvAnalysisResults)
                   .HasForeignKey(e => e.CvId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(ar => ar.JobDescription)
+                  .WithMany(jd => jd.AnalysisResults)
+                  .HasForeignKey(ar => ar.JobDescriptionId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 

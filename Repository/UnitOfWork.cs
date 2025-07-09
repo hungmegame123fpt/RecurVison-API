@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject.Entities;
 
 namespace Repository
 {
@@ -29,6 +30,7 @@ namespace Repository
         public ICvVersionRepository CvVersionRepository { get; set; }
         public IUserRoleRepository UserRoleRepository { get; set; }
         public ICvAnalysisResultRepository CvAnalysisResult { get; set; }
+        public IBaseRepository<JobDescription> JobDescriptionRepository { get; set; }
         public UnitOfWork(RecurVisionV1Context db, IConfiguration configuration)
         {
             _db = db;
@@ -45,6 +47,7 @@ namespace Repository
             VirtualInterviewRepository = new VirtualInterviewRepository(_db);
             InterviewQuestionRepository = new InterviewQuestionRepository(_db);
 			CvAnalysisResult = new CvAnalysisResultRepository(_db);
+            JobDescriptionRepository = new BaseRepository<JobDescription>(_db);
         }
         public async Task SaveChanges()
         {

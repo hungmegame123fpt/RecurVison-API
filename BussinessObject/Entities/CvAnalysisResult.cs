@@ -13,14 +13,12 @@ namespace BusinessObject.Entities
         public string? Email { get; set; }
         public string? Phone { get; set; }
         public string? Summary { get; set; }
-
+        public int? JobDescriptionId { get; set; }
         public int CvId { get; set; } 
-        public string? JobDescriptionFileName { get; set; }
         public DateTime CreatedAt { get; set; }
-
-        public int? MatchScore { get; set; }
         public string? JdAlignment { get; set; }
-        public string? ImprovementSuggestions { get; set; }
+        public virtual JobDescription JobDescription { get; set; } = null!;
+
         public virtual Cv Cv { get; set; } = null!;
         public virtual ICollection<CvSkill> Skills { get; set; } = new List<CvSkill>();
         public virtual ICollection<CvEducation> Education { get; set; } = new List<CvEducation>();
