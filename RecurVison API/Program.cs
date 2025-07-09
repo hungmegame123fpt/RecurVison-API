@@ -12,6 +12,7 @@ using BusinessObject.DTO.Payment;
 using Microsoft.Extensions.Options;
 using Net.payOS;
 using Microsoft.AspNetCore.Authentication.Google;
+using System.Text.Json;
 
 namespace RecurVison_API
 {
@@ -24,7 +25,11 @@ namespace RecurVison_API
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
             });
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                }); ;
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -127,6 +132,7 @@ namespace RecurVison_API
             builder.Services.AddScoped<IVirtualInterviewService, VirtualInterviewService>();
             builder.Services.AddScoped<IKeywordService, KeywordService>();
             builder.Services.AddScoped<ICvVersionService, CvVersionService>();
+            builder.Services.AddScoped<ICvAnalysisResultService, CvAnalysisService>();
             builder.Services.AddScoped<IAIClient, AIClient>();
             builder.Services.AddHttpClient<IAIClient, AIClient>();
             builder.Services.AddHostedService<SubscriptionExpiryService>();

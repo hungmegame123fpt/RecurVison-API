@@ -9,5 +9,6 @@ namespace Repository.Interface
 {
 	public interface ICvAnalysisResultRepository : IBaseRepository<CvAnalysisResult>
 	{
-	}
+        Task<CvAnalysisResult?> GetLatestAnalysisForCvAsync(int cvId);
+    }
 }

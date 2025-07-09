@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,18 @@ namespace Repository
 	{
 		public CvAnalysisResultRepository(RecurVisionV1Context db) : base(db)
 		{
+
 		}
-	}
+        public async Task<CvAnalysisResult?> GetLatestAnalysisForCvAsync(int cvId)
+        {
+            return await _db.CvAnalysisResults
+                .Where(r => r.CvId == cvId)
+                .Include(r => r.Skills)
+                .Include(r => r.Education)
+                .Include(r => r.Projects).ThenInclude(p => p.TechStacks)
+                .Include(r => r.Certifications)
+                .OrderByDescending(r => r.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
+    }
 }

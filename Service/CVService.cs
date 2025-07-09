@@ -191,6 +191,8 @@ namespace Service
                 Summary = analysisData.Summary,
                 JdAlignment = aiResponse.Data.JdAlignment,
                 CreatedAt = DateTime.UtcNow,
+                CvId = cv.CvId,
+                Cv = cv,
             };
 
             // Now assign navigation-based collections

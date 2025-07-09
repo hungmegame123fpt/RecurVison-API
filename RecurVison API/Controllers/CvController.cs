@@ -12,19 +12,22 @@ using System.Security.Claims;
 namespace RecurVison_API.Controllers
 {
     [Authorize(AuthenticationSchemes = "CookieAuth")]
+    [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
     public class CvController : ControllerBase
     {
         private readonly ICVService _cvService;
+        private readonly ICvAnalysisResultService _analysisService;
         private readonly IFileStorageService _storageService;
         private readonly ILogger<CvController> _logger;
 
-        public CvController(ICVService cvService, ILogger<CvController> logger, IFileStorageService storageService)
+        public CvController(ICVService cvService, ILogger<CvController> logger, IFileStorageService storageService, ICvAnalysisResultService analysisService)
         {
             _cvService = cvService;
             _logger = logger;
             _storageService = storageService;
+            _analysisService = analysisService;
         }
 
         [HttpPost("import")]
@@ -45,21 +48,16 @@ namespace RecurVison_API.Controllers
             return BadRequest(result);
         }
 		[HttpPost("analyze")]
-		[Consumes("multipart/form-data")]
-		public async Task<IActionResult> AnalyzeCV([FromForm] CvAnalysisResultRequest cvAnalysis)
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AnalyzeCV([FromForm] CvAnalysisResultRequest cvAnalysis)
 		{
 			if (cvAnalysis.jdFile == null || cvAnalysis.jdFile.Length == 0)
 			{
 				return BadRequest("Job description file is required.");
 			}
-
-			//// Get current userId from JWT token claims
-			//var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			//if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
-			//{
-			//	return Unauthorized("Invalid or missing user ID in token.");
-			//}
-
 			try
 			{
 				var result = await _cvService.AnalyzeCvAsync(cvAnalysis);
@@ -83,7 +81,21 @@ namespace RecurVison_API.Controllers
 				return StatusCode(500, $"An error occurred during analysis: {ex.Message}");
 			}
 		}
-		[HttpPost("cv-version/{cvVersionId}/upload-analysis")]
+        [HttpGet("latest-analysis/{cvId}")]
+        [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetLatestAnalysis(int cvId)
+        {
+            var result = await _analysisService.GetLatestAnalysisByCvIdAsync(cvId);
+
+            if (result == null)
+            {
+                return NotFound($"No analysis found for CV ID {cvId}");
+            }
+
+            return Ok(result);
+        }
+        [HttpPost("cv-version/{cvVersionId}/upload-analysis")]
         public async Task<IActionResult> UploadCvAnalysisJson([FromForm] CvAnalysisRequest request)
         {
             var result = await _cvService.ImportCvAnalysisJsonAsync(request);
