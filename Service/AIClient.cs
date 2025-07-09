@@ -112,7 +112,7 @@ namespace Service
 	public class AiCvAnalysisData
 	{
 		[JsonPropertyName("cv_analysis_result")]
-		public CvAnalysisResult CvAnalysisResult { get; set; } = null!;
+		public AiCvAnalysisResult CvAnalysisResult { get; set; } = null!;
 
 		[JsonPropertyName("jd_alignment")]
 		public string JdAlignment { get; set; } = null!;

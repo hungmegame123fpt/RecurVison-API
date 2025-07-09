@@ -182,25 +182,56 @@ namespace Service
 
 			var analysisData = aiResponse.Data.CvAnalysisResult;
 
-			// 4. Map AI response to your CvAnalysisResult entity
-			var result = new CvAnalysisResult
-			{
-				Name = analysisData.Name,
-				Email = analysisData.Email,
-				Phone = analysisData.Phone,
-				Summary = analysisData.Summary,
-				JdAlignment = aiResponse.Data.JdAlignment,
-				CreatedAt = DateTime.UtcNow,
-				Skills = analysisData.Skills
-	                    ?.Select(skill => new CvSkill { SkillName = skill.SkillName })
-	                    .ToList(),
-				Education = analysisData.Education?.ToList() ?? new List<CvEducation>(),
-				Projects = analysisData.Projects?.ToList() ?? new List<CvProject>(),
-				Certifications = analysisData.Certifications?.ToList() ?? new List<CvCertification>()
-			};
+            // 4. Map AI response to your CvAnalysisResult entity
+            var result = new CvAnalysisResult
+            {
+                Name = analysisData.Name,
+                Email = analysisData.Email,
+                Phone = analysisData.Phone,
+                Summary = analysisData.Summary,
+                JdAlignment = aiResponse.Data.JdAlignment,
+                CreatedAt = DateTime.UtcNow,
+            };
 
-			// 5. Save to DB
-			await _unitOfWork.CvAnalysisResult.CreateAsync(result);
+            // Now assign navigation-based collections
+            result.Skills = analysisData.Skills?.Select(skill => new CvSkill
+            {
+                SkillName = skill,
+                CvAnalysisResult = result
+            }).ToList() ?? new List<CvSkill>();
+
+            result.Education = analysisData.Education?.Select(e => new CvEducation
+            {
+                Degree = e.Degree,
+                Institution = e.Institution,
+                StartYear = e.StartYear,
+                EndYear = e.EndYear,
+                Description = e.Description,
+                CvAnalysisResult = result
+            }).ToList() ?? new List<CvEducation>();
+
+            result.Projects = analysisData.Projects?.Select(p => new CvProject
+            {
+                Title = p.Title,
+                Description = p.Description,
+                TechStacks = p.TechStacks?.Select(t => new CvProjectTechStack
+                {
+                    TechName = t.TechName
+                }).ToList(),
+                CvAnalysisResult = result
+            }).ToList() ?? new List<CvProject>();
+
+            result.Certifications = analysisData.Certifications?.Select(c => new CvCertification
+            {
+                Name = c.Name,
+                Issuer = c.Issuer,
+                TimePeriod = c.TimePeriod,
+                Description = c.Description,
+                CvAnalysisResult = result
+            }).ToList() ?? new List<CvCertification>();
+
+            // 5. Save to DB
+            await _unitOfWork.CvAnalysisResult.CreateAsync(result);
 			await _unitOfWork.CvAnalysisResult.SaveChangesAsync();
 
 			return result;

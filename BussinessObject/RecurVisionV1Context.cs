@@ -483,7 +483,9 @@ public partial class RecurVisionV1Context : DbContext
             entity.ToTable("CvAnalysisResult");
 
             entity.HasKey(e => e.Id);
-
+            entity.Property(e => e.Id)
+               .ValueGeneratedOnAdd()
+               .HasColumnName("Id");
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.Phone).HasMaxLength(50);
@@ -501,13 +503,15 @@ public partial class RecurVisionV1Context : DbContext
             entity.ToTable("CvSkill");
 
             entity.HasKey(e => e.Id);
-
+            entity.Property(e => e.Id)
+              .ValueGeneratedOnAdd()
+              .HasColumnName("Id");
             entity.Property(e => e.SkillName).HasMaxLength(100).IsRequired();
-			entity.HasOne<CvAnalysisResult>()
-				 .WithMany(e => e.Skills)
-				 .HasForeignKey(e => e.CvAnalysisResultId)
-				 .OnDelete(DeleteBehavior.Cascade);
-		});
+            entity.HasOne(e => e.CvAnalysisResult) // <-- Explicit navigation property
+                  .WithMany(r => r.Skills)
+                  .HasForeignKey(e => e.CvAnalysisResultId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
         // CvEducation
         modelBuilder.Entity<CvEducation>(entity =>
@@ -515,15 +519,17 @@ public partial class RecurVisionV1Context : DbContext
             entity.ToTable("CvEducation");
 
             entity.HasKey(e => e.Id);
-
+            entity.Property(e => e.Id)
+              .ValueGeneratedOnAdd()
+              .HasColumnName("Id");
             entity.Property(e => e.Degree).HasMaxLength(255);
             entity.Property(e => e.Institution).HasMaxLength(255);
             entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
 
-            entity.HasOne<CvAnalysisResult>()
-                  .WithMany(e => e.Education)
-                  .HasForeignKey(e => e.CvAnalysisResultId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.CvAnalysisResult)
+                   .WithMany(r => r.Education)
+                   .HasForeignKey(e => e.CvAnalysisResultId)
+                   .OnDelete(DeleteBehavior.Cascade);
         });
 
         // CvProject
@@ -532,12 +538,14 @@ public partial class RecurVisionV1Context : DbContext
             entity.ToTable("CvProject");
 
             entity.HasKey(e => e.Id);
-
+            entity.Property(e => e.Id)
+              .ValueGeneratedOnAdd()
+              .HasColumnName("Id");
             entity.Property(e => e.Title).HasMaxLength(255);
             entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
 
-            entity.HasOne<CvAnalysisResult>()
-                  .WithMany(e => e.Projects)
+            entity.HasOne(e => e.CvAnalysisResult)
+                  .WithMany(r => r.Projects)
                   .HasForeignKey(e => e.CvAnalysisResultId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
@@ -548,13 +556,15 @@ public partial class RecurVisionV1Context : DbContext
             entity.ToTable("CvProjectTechStack");
 
             entity.HasKey(e => e.Id);
-
+            entity.Property(e => e.Id)
+              .ValueGeneratedOnAdd()
+              .HasColumnName("Id");
             entity.Property(e => e.TechName).HasMaxLength(100);
 
-            entity.HasOne<CvProject>()
-                  .WithMany(p => p.TechStacks)
-                  .HasForeignKey(e => e.CvProjectId)
-                  .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.CvProject)
+                   .WithMany(p => p.TechStacks)
+                   .HasForeignKey(e => e.CvProjectId)
+                   .OnDelete(DeleteBehavior.Cascade);
         });
 
         // CvCertification
@@ -563,14 +573,16 @@ public partial class RecurVisionV1Context : DbContext
             entity.ToTable("CvCertification");
 
             entity.HasKey(e => e.Id);
-
+            entity.Property(e => e.Id)
+              .ValueGeneratedOnAdd()
+              .HasColumnName("Id");
             entity.Property(e => e.Name).HasMaxLength(255);
             entity.Property(e => e.Issuer).HasMaxLength(255);
             entity.Property(e => e.TimePeriod).HasMaxLength(100);
             entity.Property(e => e.Description).HasColumnType("nvarchar(max)");
 
-            entity.HasOne<CvAnalysisResult>()
-                  .WithMany(e => e.Certifications)
+            entity.HasOne(e => e.CvAnalysisResult)
+                  .WithMany(r => r.Certifications)
                   .HasForeignKey(e => e.CvAnalysisResultId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
