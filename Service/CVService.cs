@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 namespace Service
 {
@@ -201,6 +202,7 @@ namespace Service
                 Phone = analysisData.Phone,
                 Summary = analysisData.Summary,
                 JdAlignment = aiResponse.Data.JdAlignment,
+                MatchScore = ExtractMatchScore(aiResponse.Data.JdAlignment),
                 JobDescriptionId = jobDescription.Id,
                 CreatedAt = DateTime.UtcNow,
                 CvId = cv.CvId,
@@ -694,6 +696,19 @@ namespace Service
         public Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true)
         {
             throw new NotImplementedException();
+        }
+        private int? ExtractMatchScore(string jdAlignment)
+        {
+            if (string.IsNullOrWhiteSpace(jdAlignment))
+                return null;
+
+            var match = Regex.Match(jdAlignment, @"Overall Match Score\*\*:\s*(\d+)", RegexOptions.IgnoreCase);
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int score))
+            {
+                return score;
+            }
+
+            return null;
         }
     }
 }

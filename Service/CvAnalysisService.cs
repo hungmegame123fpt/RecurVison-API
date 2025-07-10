@@ -38,6 +38,7 @@ namespace Service
             {
                 Id = r.Id,
                 CreatedAt = r.CreatedAt,
+                Score = r.MatchScore,
                 Cv = new CvSimpleDto
                 {
                     Id = r.Cv.CvId,

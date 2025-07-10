@@ -14,6 +14,7 @@ namespace BusinessObject.Entities
         public string? Phone { get; set; }
         public string? Summary { get; set; }
         public int? JobDescriptionId { get; set; }
+        public int? MatchScore { get; set; }
         public int CvId { get; set; } 
         public DateTime CreatedAt { get; set; }
         public string? JdAlignment { get; set; }

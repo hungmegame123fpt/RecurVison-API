@@ -492,6 +492,7 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.Summary).HasColumnType("nvarchar(max)");
             entity.Property(e => e.JdAlignment).HasColumnType("nvarchar(max)");
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+            entity.Property(e => e.MatchScore).HasColumnType("int");
             entity.HasOne(e => e.Cv)
                   .WithMany(r => r.CvAnalysisResults)
                   .HasForeignKey(e => e.CvId)
