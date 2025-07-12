@@ -23,6 +23,11 @@ namespace Repository.Interface
         ICvVersionRepository CvVersionRepository { get;  }
 		ICvAnalysisResultRepository CvAnalysisResult { get;  }
         IBaseRepository<JobDescription> JobDescriptionRepository { get; }
+        IBaseRepository<CvSkill> CvSkill { get; }
+        IBaseRepository<CvCertification> CvCertification { get; }
+        IBaseRepository<CvProject> CvProject { get; }
+        IBaseRepository<CvEducation> CvEducation { get; }
+        IBaseRepository<CvProjectTechStack> CvProjectTechStack { get; }
 
         Task SaveChanges();
         Task<IDbContextTransaction> BeginTransactionAsync();

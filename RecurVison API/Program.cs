@@ -14,6 +14,7 @@ using Net.payOS;
 using Microsoft.AspNetCore.Authentication.Google;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using BusinessObject.Entities;
 
 namespace RecurVison_API
 {
@@ -128,6 +129,10 @@ namespace RecurVison_API
             builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+            builder.Services.AddScoped<IBaseRepository<CvSkill>, BaseRepository<CvSkill>>();
+            builder.Services.AddScoped<IBaseRepository<CvEducation>, BaseRepository<CvEducation>>();
+            builder.Services.AddScoped<IBaseRepository<CvProject>, BaseRepository<CvProject>>();
+            builder.Services.AddScoped<IBaseRepository<CvCertification>, BaseRepository<CvCertification>>();
             builder.Services.AddScoped<IUserRoleService, UserRoleService>();
             builder.Services.AddScoped<IUserSubscriptionService, UserSubscriptionService>();
             builder.Services.AddScoped<IInterviewQuestionService, InterviewQuestionService>();
@@ -136,7 +141,7 @@ namespace RecurVison_API
             builder.Services.AddScoped<ICvVersionService, CvVersionService>();
             builder.Services.AddScoped<ICvAnalysisResultService, CvAnalysisService>();
             builder.Services.AddScoped<IAIClient, AIClient>();
-            builder.Services.AddHttpClient<IAIClient, AIClient>();
+            builder.Services.AddHttpClient<IAdminStatisticsService, AdminStatisticsService>();
             builder.Services.AddHostedService<SubscriptionExpiryService>();
             builder.Services.AddHttpContextAccessor();
             var app = builder.Build();

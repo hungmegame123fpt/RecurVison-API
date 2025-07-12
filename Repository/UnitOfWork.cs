@@ -30,6 +30,11 @@ namespace Repository
         public ICvVersionRepository CvVersionRepository { get; set; }
         public IUserRoleRepository UserRoleRepository { get; set; }
         public ICvAnalysisResultRepository CvAnalysisResult { get; set; }
+        public IBaseRepository<CvSkill> CvSkill { get; set; }
+        public IBaseRepository<CvProject> CvProject { get; set; }
+        public IBaseRepository<CvProjectTechStack> CvProjectTechStack { get; set; }
+        public IBaseRepository<CvCertification> CvCertification { get; set; }
+        public IBaseRepository<CvEducation> CvEducation { get; set; }
         public IBaseRepository<JobDescription> JobDescriptionRepository { get; set; }
         public UnitOfWork(RecurVisionV1Context db, IConfiguration configuration)
         {
@@ -48,6 +53,11 @@ namespace Repository
             InterviewQuestionRepository = new InterviewQuestionRepository(_db);
 			CvAnalysisResult = new CvAnalysisResultRepository(_db);
             JobDescriptionRepository = new BaseRepository<JobDescription>(_db);
+            CvSkill = new BaseRepository<CvSkill>(_db);
+            CvCertification = new BaseRepository<CvCertification>(_db);
+            CvProject = new BaseRepository<CvProject>(_db);
+            CvEducation = new BaseRepository<CvEducation>(_db);
+            CvProjectTechStack = new BaseRepository<CvProjectTechStack>(_db);
         }
         public async Task SaveChanges()
         {

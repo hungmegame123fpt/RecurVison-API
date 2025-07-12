@@ -17,5 +17,8 @@ namespace Repository.Interface
         Task<T> GetByIdAsync(int id);
         Task<bool> ExistsAsync(int id);
         Task<int> SaveChangesAsync();
+        Task<int> CountAsync(Expression<Func<T, bool>> predicate = null);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string includeProperties = "");
+        IQueryable<T> GetAllQueryable(string includeProperties = "");
     }
 }

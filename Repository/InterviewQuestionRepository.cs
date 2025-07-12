@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject;
+using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using System;
@@ -10,37 +11,32 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class InterviewQuestionRepository : IInterviewQuestionRepository
+    public class InterviewQuestionRepository : BaseRepository<InterviewQuestion>, IInterviewQuestionRepository
     {
-        private readonly DbContext _context;
-        private readonly DbSet<InterviewQuestion> _dbSet;
-
-        public InterviewQuestionRepository(DbContext context)
+        public InterviewQuestionRepository(RecurVisionV1Context db) : base(db)
         {
-            _context = context;
-            _dbSet = context.Set<InterviewQuestion>();
         }
 
         public async Task<InterviewQuestion> CreateAsync(InterviewQuestion entity)
         {
-            await _dbSet.AddAsync(entity);
+            await dbSet.AddAsync(entity);
             return entity;
         }
 
         public async Task<InterviewQuestion> UpdateAsync(InterviewQuestion entity)
         {
-            _dbSet.Update(entity);
+            dbSet.Update(entity);
             return entity;
         }
 
         public async Task DeleteAsync(InterviewQuestion entity)
         {
-            _dbSet.Remove(entity);
+            dbSet.Remove(entity);
         }
 
         public async Task<List<InterviewQuestion>> GetAllAsync(Expression<Func<InterviewQuestion, bool>>? filter = null, string? includeProperties = null)
         {
-            IQueryable<InterviewQuestion> query = _dbSet;
+            IQueryable<InterviewQuestion> query = dbSet;
 
             if (filter != null)
             {
@@ -60,23 +56,17 @@ namespace Repository
 
         public async Task<InterviewQuestion> GetByIdAsync(int id)
         {
-            return await _dbSet.FindAsync(id);
+            return await dbSet.FindAsync(id);
         }
 
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _dbSet.AnyAsync(x => x.QuestionId == id);
+            return await dbSet.AnyAsync(x => x.QuestionId == id);
         }
-
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         // Custom methods
         public async Task<List<InterviewQuestion>> GetQuestionsByInterviewIdAsync(int interviewId)
         {
-            return await _dbSet
+            return await dbSet
                 .Where(q => q.InterviewId == interviewId)
                 .OrderBy(q => q.QuestionId)
                 .ToListAsync();
@@ -84,14 +74,14 @@ namespace Repository
 
         public async Task<InterviewQuestion?> GetQuestionWithAnswerAsync(int questionId)
         {
-            return await _dbSet
+            return await dbSet
                 .Include(q => q.Interview)
                 .FirstOrDefaultAsync(q => q.QuestionId == questionId);
         }
 
         public async Task<List<InterviewQuestion>> GetUnansweredQuestionsAsync(int interviewId)
         {
-            return await _dbSet
+            return await dbSet
                 .Where(q => q.InterviewId == interviewId && string.IsNullOrEmpty(q.AnswerText))
                 .ToListAsync();
         }

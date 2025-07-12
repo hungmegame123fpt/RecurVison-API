@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface ICVRepository 
+    public interface ICVRepository : IBaseRepository<Cv>
     {
         Task<List<CVDto>> GetAllAsync();
         Task<Cv?> GetByIdAsync(int cvId);

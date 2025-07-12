@@ -11,23 +11,20 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class CVRepository : ICVRepository
+    public class CVRepository : BaseRepository<Cv>, ICVRepository
     {
-        private readonly RecurVisionV1Context _context;
-
-        public CVRepository(RecurVisionV1Context context)
+        public CVRepository(RecurVisionV1Context db) : base(db)
         {
-            _context = context;
         }
         public async Task<Cv?> GetByIdAsync(int cvId)
         {
-            return await _context.Cvs
+            return await _db.Cvs
                 .Include(c => c.CvVersions)
                 .FirstOrDefaultAsync(c => c.CvId == cvId);
         } 
         public async Task<List<CVDto>> GetAllAsync()
         {
-            return await _context.Cvs
+            return await _db.Cvs
                 .Include(c => c.CvVersions)
                 .Select(cv => new CVDto
                 {
@@ -59,14 +56,14 @@ namespace Repository
 
         public async Task<Cv?> GetByUserIdAsync(int userId, int cvId)
         {
-            return await _context.Cvs
+            return await _db.Cvs
                 .Include(c => c.CvVersions)
                 .FirstOrDefaultAsync(c => c.CvId == cvId && c.UserId == userId);
         }
 
         public async Task<List<Cv>> GetByUserIdAsync(int userId)
         {
-            return await _context.Cvs
+            return await _db.Cvs
                 .Where(c => c.UserId == userId)
                 .Include(c => c.CvVersions)
                 .ToListAsync();
@@ -79,37 +76,37 @@ namespace Repository
             cv.Status = "active";
             cv.CurrentVersion = 1;
 
-            _context.Cvs.Add(cv);
-            await _context.SaveChangesAsync();
+            _db.Cvs.Add(cv);
+            await _db.SaveChangesAsync();
             return cv;
         }
 
         public async Task<Cv> UpdateAsync(Cv cv)
         {
             cv.LastModified = DateTime.UtcNow;
-            _context.Cvs.Update(cv);
-            await _context.SaveChangesAsync();
+            _db.Cvs.Update(cv);
+            await _db.SaveChangesAsync();
             return cv;
         }
 
         public async Task<bool> DeleteAsync(int cvId)
         {
-            var cv = await _context.Cvs.FindAsync(cvId);
+            var cv = await _db.Cvs.FindAsync(cvId);
             if (cv == null) return false;
 
-            _context.Cvs.Remove(cv);
-            await _context.SaveChangesAsync();
+            _db.Cvs.Remove(cv);
+            await _db.SaveChangesAsync();
             return true;
         }
 
         public async Task<bool> ExistsAsync(int cvId)
         {
-            return await _context.Cvs.AnyAsync(c => c.CvId == cvId);
+            return await _db.Cvs.AnyAsync(c => c.CvId == cvId);
         }
 
         public async Task<CvVersion?> GetLatestVersionAsync(int cvId)
         {
-            return await _context.CvVersions
+            return await _db.CvVersions
                 .Where(v => v.CvId == cvId)
                 .OrderByDescending(v => v.VersionNumber)
                 .FirstOrDefaultAsync();
@@ -118,8 +115,8 @@ namespace Repository
         public async Task<CvVersion> CreateVersionAsync(CvVersion version)
         {
             version.CreatedAt = DateTime.UtcNow;
-            _context.CvVersions.Add(version);
-            await _context.SaveChangesAsync();
+            _db.CvVersions.Add(version);
+            await _db.SaveChangesAsync();
             return version;
         }
         public async Task MatchKeywordsAndSaveAsync(int cvId, string plainTextCv)
@@ -136,7 +133,7 @@ namespace Repository
             if (!cvWords.Any()) return;
 
             // STEP 2: Get all relevant keywords from DB
-            var keywords = await _context.Keywords
+            var keywords = await _db.Keywords
                 .Include(k => k.JobField)
                 .Where(k => cvWords.Contains(k.Keyword1.ToLower()))
                 .ToListAsync();
@@ -146,7 +143,7 @@ namespace Repository
             // STEP 3: Find job postings related to those keyword job fields
             var matchedFieldIds = keywords.Select(k => k.FieldId).Distinct().ToList();
 
-            var jobPostings = await _context.JobPostings
+            var jobPostings = await _db.JobPostings
                 .Where(j => j.FieldId != null && matchedFieldIds.Contains(j.FieldId.Value))
                 .ToListAsync();
 
@@ -177,13 +174,13 @@ namespace Repository
             // STEP 5: Save matches
             if (matches.Any())
             {
-                _context.CvKeywordMatches.AddRange(matches);
-                await _context.SaveChangesAsync();
+                _db.CvKeywordMatches.AddRange(matches);
+                await _db.SaveChangesAsync();
             }
         }
         public async Task<int?> CategorizeCvByFieldAsync(int cvId, string plainTextContent)
         {
-            var cv = await _context.Cvs.FindAsync(cvId);
+            var cv = await _db.Cvs.FindAsync(cvId);
             if (cv == null || string.IsNullOrWhiteSpace(plainTextContent))
                 return null;
 
@@ -199,7 +196,7 @@ namespace Repository
                 .ToHashSet();
 
             // Step 2: Match JobField based on Objective
-            var allFields = await _context.JobFields.ToListAsync();
+            var allFields = await _db.JobFields.ToListAsync();
             foreach (var field in allFields)
             {
                 var fieldWords = field.FieldName.ToLower().Split(' ');
@@ -207,7 +204,7 @@ namespace Repository
                 {
                     cv.FieldId = field.FieldId;
                     cv.LastModified = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
+                    await _db.SaveChangesAsync();
                     return field.FieldId;
                 }
             }
@@ -221,7 +218,7 @@ namespace Repository
                 .Distinct()
                 .ToHashSet();
 
-            var keywordMatches = await _context.Keywords
+            var keywordMatches = await _db.Keywords
                 .Where(k => k.FieldId != null && fullWords.Contains(k.Keyword1.ToLower()))
                 .ToListAsync();
 
@@ -242,7 +239,7 @@ namespace Repository
             cv.FieldId = bestMatch.FieldId;
             cv.LastModified = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return bestMatch.FieldId;
         }
         private string ExtractObjectiveSection(string text)

@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject;
+using BusinessObject.Entities;
 using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using System;
@@ -10,37 +11,32 @@ using System.Threading.Tasks;
 
 namespace Repository
 {
-    public class JobFieldRepository : IJobFieldRepository
+    public class JobFieldRepository : BaseRepository<JobField>, IJobFieldRepository
     {
-        private readonly DbContext _context;
-        private readonly DbSet<JobField> _dbSet;
-
-        public JobFieldRepository(DbContext context)
+        public JobFieldRepository(RecurVisionV1Context db) : base(db)
         {
-            _context = context;
-            _dbSet = context.Set<JobField>();
         }
 
         public async Task<JobField> CreateAsync(JobField entity)
         {
-            await _dbSet.AddAsync(entity);
+            await dbSet.AddAsync(entity);
             return entity;
         }
 
         public async Task<JobField> UpdateAsync(JobField entity)
         {
-            _dbSet.Update(entity);
+            dbSet.Update(entity);
             return entity;
         }
 
         public async Task DeleteAsync(JobField entity)
         {
-            _dbSet.Remove(entity);
+            dbSet.Remove(entity);
         }
 
         public async Task<List<JobField>> GetAllAsync(Expression<Func<JobField, bool>>? filter = null, string? includeProperties = null)
         {
-            IQueryable<JobField> query = _dbSet;
+            IQueryable<JobField> query = dbSet;
 
             if (filter != null)
             {
@@ -60,21 +56,16 @@ namespace Repository
 
         public async Task<JobField> GetByIdAsync(int id)
         {
-            return await _dbSet.FindAsync(id);
+            return await dbSet.FindAsync(id);
         }
 
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _dbSet.AnyAsync(x => x.FieldId == id);
-        }
-
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
+            return await dbSet.AnyAsync(x => x.FieldId == id);
         }
         public async Task<string?> GetJobNameByIdAsync(int? id)
         {
-            return await _dbSet
+            return await dbSet
                 .Where(k => k.FieldId == id)
                 .Select(k => k.FieldName)
                 .FirstOrDefaultAsync();

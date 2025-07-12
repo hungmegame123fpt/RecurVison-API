@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Interface
 {
-    public interface IUserRepository
+    public interface IUserRepository : IBaseRepository<User>
     {
         Task<int> CancelUsersNotLoggedInSinceAsync(DateTime cutoffDate);
         Task<List<User>> GetAllAsync(bool includeRelations = false);

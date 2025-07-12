@@ -72,5 +72,43 @@ namespace Repository
             return await _db.SaveChangesAsync();
 
         }
+        public async Task<int> CountAsync(Expression<Func<T, bool>> predicate = null)
+        {
+            try
+            {
+                IQueryable<T> query = dbSet;
+                if (predicate != null)
+                {
+                    query = query.Where(predicate);
+                }
+                return await query.CountAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Couldn't retrieve count of entities: {ex.Message}");
+            }
+        }
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string includeProperties = "")
+        {
+            IQueryable<T> query = dbSet;
+            query = IncludeProperties(query, includeProperties);
+            return await query.Where(predicate).ToListAsync();
+        }
+        public virtual IQueryable<T> GetAllQueryable(string includeProperties = "")
+        {
+            IQueryable<T> query = dbSet;
+            return IncludeProperties(query, includeProperties);
+        }
+        private IQueryable<T> IncludeProperties(IQueryable<T> query, string includeProperties)
+        {
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty.Trim());
+                }
+            }
+            return query;
+        }
     }
 }

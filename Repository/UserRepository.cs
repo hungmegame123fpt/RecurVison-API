@@ -13,21 +13,18 @@ using System.Linq.Expressions;
 
 namespace Repository
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        private readonly RecurVisionV1Context _context;
-
-        public UserRepository(RecurVisionV1Context context)
+        public UserRepository(RecurVisionV1Context db) : base(db)
         {
-            _context = context;
         }
         public async Task<User?> GetByIdAsync(int? id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            return await _db.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }
         public async Task<List<User>> GetAllAsync(bool includeRelations = false)
         {
-            IQueryable<User> query = _context.Users;
+            IQueryable<User> query = _db.Users;
 
             if (includeRelations)
             {
@@ -48,31 +45,31 @@ namespace Repository
 
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.AccountStatus == "Active");
+            return await _db.Users.FirstOrDefaultAsync(u => u.Email == email && u.AccountStatus == "Active");
         }
 
         public async Task<User?> GetByGoogleIdAsync(string googleId)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.GoogleId == googleId && u.AccountStatus == "Active");
+            return await _db.Users.FirstOrDefaultAsync(u => u.GoogleId == googleId && u.AccountStatus == "Active");
         }
 
         public async Task<User> CreateAsync(User user)
         {
             user.CreatedAt = DateTime.UtcNow;
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
             return user;
         }
 
         public async Task<User> UpdateAsync(User user)
         {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
             return user;
         }
         public async Task<List<User>> GetAllAsync(Expression<Func<User, bool>>? filter = null, string? includeProperties = null)
         {
-            IQueryable<User> query = _context.Users;
+            IQueryable<User> query = _db.Users;
 
             if (filter != null)
             {
@@ -91,11 +88,11 @@ namespace Repository
         }
         public async Task<bool> EmailExistsAsync(string email)
         {
-            return await _context.Users.AnyAsync(u => u.Email == email);
+            return await _db.Users.AnyAsync(u => u.Email == email);
         }
         public async Task<PaginatedResult<User>> GetUsersWithPaginationAsync(UserFilterDto filter)
         {
-            var query = _context.Users.AsQueryable();
+            var query = _db.Users.AsQueryable();
 
             // Apply filters
             if (!string.IsNullOrEmpty(filter.Search))
@@ -141,24 +138,24 @@ namespace Repository
 
             return new UserStatsDto
             {
-                TotalUsers = await _context.Users.CountAsync(),
-                ActiveUsers = await _context.Users.CountAsync(u => u.AccountStatus.Equals("Active")),
-                SuspendedUsers = await _context.Users.CountAsync(u => u.AccountStatus.Equals("Suspended")),
-                NewSignupsToday = await _context.Users.CountAsync(u => u.CreatedAt == today),
-                NewSignupsThisWeek = await _context.Users.CountAsync(u => u.CreatedAt >= weekStart),
-                NewSignupsThisMonth = await _context.Users.CountAsync(u => u.CreatedAt >= monthStart)
+                TotalUsers = await _db.Users.CountAsync(),
+                ActiveUsers = await _db.Users.CountAsync(u => u.AccountStatus.Equals("Active")),
+                SuspendedUsers = await _db.Users.CountAsync(u => u.AccountStatus.Equals("Suspended")),
+                NewSignupsToday = await _db.Users.CountAsync(u => u.CreatedAt == today),
+                NewSignupsThisWeek = await _db.Users.CountAsync(u => u.CreatedAt >= weekStart),
+                NewSignupsThisMonth = await _db.Users.CountAsync(u => u.CreatedAt >= monthStart)
             };
         }
         public async Task<List<User>> GetNewSignupsAsync(DateTime fromDate)
         {
-            return await _context.Users
+            return await _db.Users
                 .Where(u => u.CreatedAt >= fromDate)
                 .OrderByDescending(u => u.CreatedAt)
                 .ToListAsync();
         }
         public async Task<int> CancelUsersNotLoggedInSinceAsync(DateTime cutoffDate)
         {
-            var usersToCancel = await _context.Users
+            var usersToCancel = await _db.Users
                 .Where(u => u.LastLogin != null && u.LastLogin < cutoffDate && u.AccountStatus != "Cancelled")
                 .ToListAsync();
 
@@ -167,7 +164,7 @@ namespace Repository
                 user.AccountStatus = "Cancelled";
             }
 
-            await _context.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return usersToCancel.Count;
         }
     }
