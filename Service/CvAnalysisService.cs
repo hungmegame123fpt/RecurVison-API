@@ -22,6 +22,7 @@ namespace Service
 
         public async Task<CvAnalysisResultDto?> GetLatestAnalysisByCvIdAsync(int cvId)
         {
+            var cv = await _unitOfWork.CVRepository.GetByIdAsync(cvId);
             var result = await _unitOfWork.CvAnalysisResult.GetLatestAnalysisForCvAsync(cvId);
             return new CvAnalysisResultDto
             {
@@ -35,7 +36,7 @@ namespace Service
                 CvId = result.CvId,
                 CreatedAt = result.CreatedAt,
                 JdAlignment = result.JdAlignment,
-                CvUrl = result.Cv?.FilePath,
+                CvUrl = cv.FilePath,
                 JobDescription = result.JobDescription,
                 Skills = result.Skills,
                 Education = result.Education,
