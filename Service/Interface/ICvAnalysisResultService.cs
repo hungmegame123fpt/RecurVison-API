@@ -10,7 +10,7 @@ namespace Service.Interface
 {
     public interface  ICvAnalysisResultService
     {
-        Task<CvAnalysisResult?> GetLatestAnalysisByCvIdAsync(int cvId);
+        Task<CvAnalysisResultDto?> GetLatestAnalysisByCvIdAsync(int cvId);
         Task<List<CvAnalysisSummaryDto>> GetAnalysisSummariesAsync(int userId);
     }
 }

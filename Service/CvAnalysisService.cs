@@ -20,9 +20,28 @@ namespace Service
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<CvAnalysisResult?> GetLatestAnalysisByCvIdAsync(int cvId)
+        public async Task<CvAnalysisResultDto?> GetLatestAnalysisByCvIdAsync(int cvId)
         {
-            return await _unitOfWork.CvAnalysisResult.GetLatestAnalysisForCvAsync(cvId);
+            var result = await _unitOfWork.CvAnalysisResult.GetLatestAnalysisForCvAsync(cvId);
+            return new CvAnalysisResultDto
+            {
+                Id = result.Id,
+                Name = result.Name,
+                Email = result.Email,
+                Phone = result.Phone,
+                Summary = result.Summary,
+                JobDescriptionId = result.JobDescriptionId,
+                MatchScore = result.MatchScore,
+                CvId = result.CvId,
+                CreatedAt = result.CreatedAt,
+                JdAlignment = result.JdAlignment,
+                CvUrl = result.Cv?.FilePath,
+                JobDescription = result.JobDescription,
+                Skills = result.Skills,
+                Education = result.Education,
+                Projects = result.Projects,
+                Certifications = result.Certifications
+            };
         }
         public async Task<List<CvAnalysisSummaryDto>> GetAnalysisSummariesAsync(int userId)
         {
