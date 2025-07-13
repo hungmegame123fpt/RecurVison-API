@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.AiClient;
+﻿using BusinessObject.DTO;
+using BusinessObject.DTO.AiClient;
 using BusinessObject.Entities;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -14,7 +15,9 @@ namespace Service.Interface
         Task<AiSessionResponse?> StartSessionAsync(AiSessionRequest request);
         Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request);
         Task<AiCvAnalysisResponse> AnalyzeCvAsync(int Cvid, IFormFile jdFile);
+        Task<List<SuggestedJob>> GetSuggestedJobsForCvAsync(int cvId);
 
 
-	}
+
+    }
 }
