@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BusinessObject.DTO.User;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Repository.Interface;
 using Service.Interface;
 
 namespace RecurVison_API.Controllers
@@ -9,10 +11,16 @@ namespace RecurVison_API.Controllers
     public class AdminStatisticsController : ControllerBase
     {
         private readonly IAdminStatisticsService _statisticsService;
+        private readonly IUserService _userService;
+        private readonly ISubscriptionPaymentService _subscriptionService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AdminStatisticsController(IAdminStatisticsService statisticsService)
+        public AdminStatisticsController(IAdminStatisticsService statisticsService, IUserService userService, ISubscriptionPaymentService subscriptionService, IUnitOfWork unitOfWork)
         {
             _statisticsService = statisticsService;
+            _userService = userService;
+            _subscriptionService = subscriptionService;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet("cvs/new-today")]
@@ -90,6 +98,47 @@ namespace RecurVison_API.Controllers
         {
             var result = await _statisticsService.GetScoreDistributionAsync();
             return Ok(result);
+        }
+        [HttpGet("user/stats")]
+        public async Task<ActionResult<UserStatsDto>> GetUserStats()
+        {
+            try
+            {
+                var stats = await _userService.GetUserStatsAsync();
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+        }
+        [HttpGet("subscription/stats")]
+        public async Task<IActionResult> GetSubscriptionStatistics()
+        {
+            var stats = await _subscriptionService.GetSubscriptionStatsAsync();
+            var totalRevenue = await _subscriptionService.GetTotalRevenueAsync();
+            var activeCount = await _unitOfWork.UserSubscriptionRepository.GetActiveSubscriptionCountAsync();
+
+            return Ok(new
+            {
+                StatusStats = stats,
+                TotalRevenue = totalRevenue,
+                ActiveSubscriptions = activeCount
+            });
+        }
+
+        [HttpGet("revenue/total")]
+        public async Task<IActionResult> GetTotalRevenue()
+        {
+            var revenue = await _subscriptionService.GetTotalRevenueAsync();
+            return Ok(new { totalRevenue = revenue });
+        }
+
+        [HttpGet("revenue/plan/{planId}")]
+        public async Task<IActionResult> GetRevenueByPlan(int planId)
+        {
+            var revenue = await _unitOfWork.UserSubscriptionRepository.GetRevenueByPlanAsync(planId);
+            return Ok(new { planRevenue = revenue });
         }
     }
 }

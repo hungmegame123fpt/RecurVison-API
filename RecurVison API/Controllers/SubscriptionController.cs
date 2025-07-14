@@ -158,34 +158,5 @@ namespace RecurVison_API.Controllers
             var subscriptions = await _subscriptionService.GetExpiringSubscriptionsAsync(days);
             return Ok(subscriptions);
         }
-
-        [HttpGet("stats")]
-        public async Task<IActionResult> GetSubscriptionStatistics()
-        {
-            var stats = await _subscriptionService.GetSubscriptionStatsAsync();
-            var totalRevenue = await _subscriptionService.GetTotalRevenueAsync();
-            var activeCount = await _unitOfWork.UserSubscriptionRepository.GetActiveSubscriptionCountAsync();
-
-            return Ok(new
-            {
-                StatusStats = stats,
-                TotalRevenue = totalRevenue,
-                ActiveSubscriptions = activeCount
-            });
-        }
-
-        [HttpGet("revenue/total")]
-        public async Task<IActionResult> GetTotalRevenue()
-        {
-            var revenue = await _subscriptionService.GetTotalRevenueAsync();
-            return Ok(new { totalRevenue = revenue });
-        }
-
-        [HttpGet("revenue/plan/{planId}")]
-        public async Task<IActionResult> GetRevenueByPlan(int planId)
-        {
-            var revenue = await _unitOfWork.UserSubscriptionRepository.GetRevenueByPlanAsync(planId);
-            return Ok(new { planRevenue = revenue });
-        }
     }
 }
