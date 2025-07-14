@@ -60,7 +60,7 @@ public partial class RecurVisionV1Context : DbContext
     public DbSet<CvProjectTechStack> CvProjectTechStacks { get; set; }
     public DbSet<CvCertification> CvCertifications { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=tcp:recruvisionserver.database.windows.net,1433;Initial Catalog=RecurVision_V1;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+        => optionsBuilder.UseSqlServer("Server=tcp:recrudb.database.windows.net,1433;Initial Catalog=RecurVision_V1-2025-7-13-0-38;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
