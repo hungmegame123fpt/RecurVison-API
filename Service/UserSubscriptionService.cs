@@ -49,7 +49,18 @@ namespace Service
                 throw;
             }
         }
+        public async Task<UserSubscriptionDto> UpdateSubscriptionAsync(int id, UserSubscriptionDto subscriptionDto)
+        {
+            var existingSub = await _unitOfWork.UserSubscriptionRepository.GetByIdAsync(id);
+            if (existingSub == null)
+                throw new KeyNotFoundException($"Subscription with ID {id} not found.");
 
+            _mapper.Map(subscriptionDto, existingSub);
+            await _unitOfWork.UserSubscriptionRepository.UpdateAsync(existingSub);
+            await _unitOfWork.SaveChanges();
+
+            return _mapper.Map<UserSubscriptionDto>(existingSub);
+        }
         public async Task<List<UserSubscriptionDto>> GetUserSubscriptionHistoryAsync(int userId)
         {
             try
@@ -255,21 +266,27 @@ namespace Service
         }
         public async Task<int> ResetUserQuotasAsync()
         {
-            var userId = GetCurrentUserId();
-            var sub = await _unitOfWork.UserSubscriptionRepository
-                .GetUserActiveSubscriptionAsync(userId); 
-            var plan = sub.Plan;
-            if (plan == null)
+            var activeSubscriptions = await _unitOfWork.UserSubscriptionRepository
+         .FindAsync(s => s.PaymentStatus == "Active", includeProperties: "Plan");
+
+            int resetCount = 0;
+            var now = DateTime.UtcNow;
+
+            foreach (var sub in activeSubscriptions)
             {
-                return 0;
-            }
+                var plan = sub.Plan;
+                if (plan == null) continue;
+
                 sub.CvRemaining = plan.MaxCvsAllowed;
                 sub.InterviewPerDayRemaining = plan.MaxTextInterviewPerDay;
                 sub.VoiceInterviewRemaining = plan.MaxVoiceInterviewPerMonth;
+                sub.LastQuotaResetDate = now;
 
-                sub.LastQuotaResetDate = DateTime.UtcNow;
+                resetCount++;
+            }
+
             await _unitOfWork.SaveChanges();
-            return 1;
+            return resetCount;
         }
 
         public async Task<PremiumRateStatsDto> GetPremiumRateStatsAsync()
@@ -316,6 +333,21 @@ namespace Service
                 Rate = total == 0 ? 0 : Math.Round((decimal)premium / total * 100, 2)
             };
         }
+        public async Task<SubscriptionQuotaDto?> GetUserQuotaAsync(int userId)
+        {
+            var subscription = await _unitOfWork.UserSubscriptionRepository.GetUserActiveSubscriptionAsync(userId);
+            if (subscription == null || subscription.Plan == null)
+                return null;
 
+            return new SubscriptionQuotaDto
+            {
+                InterviewPerDayRemaining = subscription.InterviewPerDayRemaining ?? 0,
+                MaxInterviewPerDay = subscription.Plan.MaxTextInterviewPerDay ?? 0,
+                VoiceInterviewRemaining = subscription.VoiceInterviewRemaining ?? 0,
+                MaxVoiceInterview = subscription.Plan.MaxVoiceInterviewPerMonth ?? 0,
+                CvRemaining = subscription.CvRemaining ?? 0,
+                MaxCvsAllowed = subscription.Plan.MaxCvsAllowed ?? 0
+            };
+        }
     }
 }

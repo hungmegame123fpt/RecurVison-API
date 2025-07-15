@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interface;
+using System.Security.Claims;
 
 namespace RecurVison_API.Controllers
 {
@@ -293,6 +294,17 @@ namespace RecurVison_API.Controllers
         {
             var result = await _service.GetPremiumRateStatsAsync();
             return Ok(result);
+        }
+        [HttpGet("quota")]
+        public async Task<IActionResult> GetQuota()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var quota = await _service.GetUserQuotaAsync(int.Parse(userId));
+            if (quota == null) return NotFound("No active subscription found.");
+
+            return Ok(quota);
         }
     }
 }

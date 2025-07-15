@@ -11,6 +11,7 @@ namespace Service.Interface
     public interface IUserSubscriptionService
     {
         Task<int> ExpireEndedSubscriptionsAsync();
+        Task<UserSubscriptionDto> UpdateSubscriptionAsync(int id, UserSubscriptionDto subscriptionDto);
         Task<UserSubscriptionDto?> GetUserActiveSubscriptionAsync(int userId);
         Task<List<UserSubscriptionDto>> GetUserSubscriptionHistoryAsync(int userId);
         Task<List<UserSubscriptionDto>> GetSubscriptionsByPlanAsync(int planId);
@@ -29,5 +30,6 @@ namespace Service.Interface
         Task<UserSubscriptionDto?> GetSubscriptionWithDetailsAsync(int subscriptionId);
         Task<PremiumRateStatsDto> GetPremiumRateStatsAsync();
         Task<int> ResetUserQuotasAsync();
+        Task<SubscriptionQuotaDto?> GetUserQuotaAsync(int userId);
     }
 }

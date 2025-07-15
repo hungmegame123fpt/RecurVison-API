@@ -28,6 +28,7 @@ namespace Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFileStorageService _fileStorageService;
         private readonly IDocumentParserService _documentParserService;
+        private readonly IUserSubscriptionService _subscriptionService;
         private readonly IAIClient _aiClient;
         private readonly ILogger<CVService> _logger;
 
@@ -39,13 +40,15 @@ namespace Service
             IFileStorageService fileStorageService,
             IDocumentParserService documentParserService,
             ILogger<CVService> logger,
-            IAIClient aiClient)
+            IAIClient aiClient,
+            IUserSubscriptionService subscriptionService)
         {
             _unitOfWork = unitOfWork;
             _fileStorageService = fileStorageService;
             _documentParserService = documentParserService;
             _logger = logger;
             _aiClient = aiClient;
+            _subscriptionService = subscriptionService;
         }
         public async Task<List<CVDto>> GetAllCvAsync()
         {
@@ -186,7 +189,13 @@ namespace Service
             await _unitOfWork.JobDescriptionRepository.CreateAsync(jobDescription);
             await _unitOfWork.SaveChanges();
             // 2. Check user subscription (optional: quota check if needed)
-
+            var subscription = await _subscriptionService.GetUserActiveSubscriptionAsync(cv.UserId);
+            if (subscription == null)
+                throw new Exception("subscription not found");
+            if (subscription.CvRemaining <= 0)
+                throw new Exception("Your daily Cv analysis has depleted");
+            subscription.CvRemaining -= 1;
+            await _subscriptionService.UpdateSubscriptionAsync(subscription.SubscriptionId, subscription);
             // 3. Call AI Client
             var aiResponse = await _aiClient.AnalyzeCvAsync(cvAnalysis.CvId, cvAnalysis.jdFile);
 			if (aiResponse?.Data == null)
