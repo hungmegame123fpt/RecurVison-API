@@ -275,7 +275,7 @@ namespace Service
             foreach (var sub in activeSubscriptions)
             {
                 var plan = sub.Plan;
-                if (plan == null) continue;
+                if (plan == null || sub.LastQuotaResetDate?.Date == now.Date) continue;
 
                 sub.CvRemaining = plan.MaxCvsAllowed;
                 sub.InterviewPerDayRemaining = plan.MaxTextInterviewPerDay;
