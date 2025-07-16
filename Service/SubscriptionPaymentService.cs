@@ -120,54 +120,80 @@ namespace Service
 
         public async Task<bool> ProcessPaymentWebhookAsync(PaymentWebhookRequest webhookRequest)
         {
-        await _unitOfWork.BeginTransactionAsync();
+            await _unitOfWork.BeginTransactionAsync();
 
-        // Find subscription by order code using repository
-        var subscription = await _unitOfWork.UserSubscriptionRepository.GetSubscriptionByOrderCodeAsync(webhookRequest.OrderCode);
-        var user = await _unitOfWork.UserRepository.GetByIdAsync(subscription.UserId);
-            if (subscription == null)
-        {
-            await _unitOfWork.RollbackAsync();
-            _logger.LogWarning("Subscription not found for order code: {OrderCode}", webhookRequest.OrderCode);
-            return false;
+            try
+            {
+                // Find subscription by order code
+                var subscription = await _unitOfWork.UserSubscriptionRepository
+                    .GetSubscriptionByOrderCodeAsync(webhookRequest.OrderCode);
+
+                if (subscription == null)
+                {
+                    _logger.LogWarning("Subscription not found for order code: {OrderCode}", webhookRequest.OrderCode);
+                    await _unitOfWork.RollbackAsync();
+                    return false;
+                }
+
+                var user = await _unitOfWork.UserRepository.GetByIdAsync(subscription.UserId);
+
+                if (webhookRequest.Status.ToUpper() == "PAID")
+                {
+                    // Calculate subscription period
+                    var startDate = DateTime.UtcNow;
+                    var endDate = CalculateEndDate(startDate, subscription.Plan?.BillingCycle);
+
+                    subscription.PaymentStatus = "ACTIVE";
+                    subscription.StartDate = startDate;
+                    subscription.EndDate = endDate;
+                    subscription.LastPaymentDate = startDate;
+
+                    await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
+
+                    // Update user subscription status
+                    user.SubscriptionStatus = "ACTIVE";
+                    await _unitOfWork.UserRepository.UpdateAsync(user);
+
+                    // Cancel previous free subscription if any (assuming PlanId 15 is Free)
+                    var oldFreeSubs = await _unitOfWork.UserSubscriptionRepository.FindAsync(
+                        s => s.UserId == subscription.UserId && s.PlanId == 15 && s.SubscriptionId != subscription.SubscriptionId && s.PaymentStatus == "ACTIVE");
+
+                    foreach (var sub in oldFreeSubs)
+                    {
+                        sub.PaymentStatus = "CANCELLED";
+                        await _unitOfWork.UserSubscriptionRepository.UpdateAsync(sub);
+                    }
+
+                    await _unitOfWork.SaveChanges();
+                    await _unitOfWork.CommitAsync();
+
+                    _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
+                        subscription.SubscriptionId, subscription.UserId);
+
+                    return true;
+                }
+                else if (webhookRequest.Status.ToUpper() == "CANCELLED")
+                {
+                    subscription.PaymentStatus = "CANCELLED";
+                    await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
+
+                    await _unitOfWork.SaveChanges();
+                    await _unitOfWork.CommitAsync();
+
+                    _logger.LogInformation("Subscription payment cancelled for order code: {OrderCode}", webhookRequest.OrderCode);
+                    return true;
+                }
+
+                await _unitOfWork.RollbackAsync();
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError(ex, "Error processing payment webhook.");
+                return false;
+            }
         }
-
-        if (webhookRequest.Status.ToUpper() == "PAID")
-        {
-            // Calculate subscription period
-            var startDate = DateTime.UtcNow;
-            var endDate = CalculateEndDate(startDate, subscription.Plan?.BillingCycle);
-            // Update subscription using repository
-            subscription.PaymentStatus = "ACTIVE";
-            subscription.StartDate = startDate;
-            subscription.EndDate = endDate;
-            subscription.LastPaymentDate = startDate;
-            await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
-            await _unitOfWork.SaveChanges();
-            //Update User Subscriptipn status
-            user.SubscriptionStatus = "ACTIVE";
-            await _unitOfWork.UserRepository.UpdateAsync(user);
-            await _unitOfWork.SaveChanges();
-            await _unitOfWork.CommitAsync();         
-            _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
-            subscription.SubscriptionId, subscription.UserId);
-
-            return true;
-        }
-        else if (webhookRequest.Status.ToUpper() == "CANCELLED")
-        {
-            subscription.PaymentStatus = "CANCELLED";
-            await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
-            await _unitOfWork.SaveChanges();
-            await _unitOfWork.CommitAsync();
-
-            _logger.LogInformation("Subscription payment cancelled for order code: {OrderCode}", webhookRequest.OrderCode);
-            return true;
-        }
-
-        await _unitOfWork.RollbackAsync();
-        return false;
-    }
 
         public async Task<UserSubscription?> GetUserActiveSubscriptionAsync(int userId)
         {
