@@ -144,7 +144,6 @@ namespace Service
             subscription.LastPaymentDate = startDate;
             await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
             await _unitOfWork.SaveChanges();
-            await _unitOfWork.CommitAsync();
             //Update User Subscriptipn status
             user.SubscriptionStatus = "ACTIVE";
             await _unitOfWork.UserRepository.UpdateAsync(user);
