@@ -24,23 +24,7 @@ namespace RecurVison_API.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Create a new virtual interview
-        /// </summary>
-        [HttpPost]
-        public async Task<ActionResult<VirtualInterviewDto>> CreateInterview([FromBody] CreateVirtualInterviewDto createDto)
-        {
-            try
-            {
-                var interview = await _interviewService.CreateInterviewAsync(createDto);
-                return CreatedAtAction(nameof(GetInterviewById), new { id = interview.InterviewId }, interview);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating virtual interview");
-                return StatusCode(500, "An error occurred while creating the interview");
-            }
-        }
+        
 
         /// <summary>
         /// Get interview by ID
@@ -181,15 +165,19 @@ namespace RecurVison_API.Controllers
             }
         }
         [HttpPost("start")]
-        public async Task<IActionResult> Start([FromBody] StartInterviewRequest request)
+        public async Task<IActionResult> Start(int cvId, string jobDescription)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User not authenticated.");
             }
-
-           request.UserId = int.Parse(userId);
+            var request = new StartInterviewRequest()
+            {
+                CvId = cvId,
+                UserId = int.Parse(userId),
+                JobDescription = jobDescription
+            };
             var result = await _interviewService.StartInterviewAsync(request);
             return Ok(result);
         }

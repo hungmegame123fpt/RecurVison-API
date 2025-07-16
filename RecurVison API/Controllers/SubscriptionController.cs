@@ -30,15 +30,21 @@ namespace RecurVison_API.Controllers
             _payOS = payOS;
         }
         [HttpPost("create-payment")]
-        public async Task<IActionResult> CreateSubscriptionPayment([FromBody] CreatePaymentLinkRequest request)
+        public async Task<IActionResult> CreateSubscriptionPayment(int planId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("User ID not found in claims.");
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            var plan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(planId);
+            var request = new CreatePaymentLinkRequest
             {
-                return Unauthorized("User not authenticated.");
-            }
-
-           request.UserId = int.Parse(userId);
+                PlanId = planId,
+                UserId = userId,
+                Description = $"{user.LastName} {user.FirstName} transfer for {plan.PlanName}",
+                ReturnUrl = "https://recruvision.io.vn/user/pricing?fbclid=IwY2xjawLkrWdleHRuA2FlbQIxMABicmlkETE2MTBLaGtnamxFU1RWTlBHAR6nVe_4s9-p8EA5Y51Ryigf4mkPMdu8yrHzUzCSTZ4t8FaL8Rn7eq8vQXsd_w_aem_2_EunTIR69mx03PpICH4MQ",
+                CancelUrl = "https://recruvision.io.vn/user/pricing?fbclid=IwY2xjawLkrWdleHRuA2FlbQIxMABicmlkETE2MTBLaGtnamxFU1RWTlBHAR6nVe_4s9-p8EA5Y51Ryigf4mkPMdu8yrHzUzCSTZ4t8FaL8Rn7eq8vQXsd_w_aem_2_EunTIR69mx03PpICH4MQ",
+            };
             var result = await _subscriptionService.CreateSubscriptionPaymentAsync(request);
 
             if (result.Success)
