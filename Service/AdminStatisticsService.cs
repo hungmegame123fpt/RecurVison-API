@@ -55,7 +55,7 @@ namespace Service
         //        .Take(top)
         //        .ToList();
 
-        
+
 
         public async Task<object> GetCvFieldDistributionAsync() => await GetTotalCvFieldsAsync();
 
@@ -84,6 +84,61 @@ namespace Service
                 .Select(g => new { Score = g.Key, Count = g.Count() })
                 .Cast<object>()
                 .ToList();
+        }
+        public async Task<object> GetDashboardOverviewAsync()
+        {
+            var users = await _unitOfWork.UserRepository.GetAllAsync(includeProperties: "Cvs");
+            var userIds = users.Select(u => u.UserId).ToList();
+
+            var analysisList = await _unitOfWork.CvAnalysisResult.GetAllAsync(includeProperties: "Cv");
+            var interviewList = await _unitOfWork.VirtualInterviewRepository.GetAllAsync();
+            var subscriptions = await _unitOfWork.UserSubscriptionRepository.GetAllAsync(includeProperties: "Plan");
+
+            // User Engagement
+            var aiUsers = interviewList.Select(i => i.UserId).Distinct().ToHashSet();
+            var cvUsers = analysisList.Select(a => a.Cv.UserId).Distinct().ToHashSet();
+
+            var both = aiUsers.Intersect(cvUsers).ToHashSet();
+            var aiOnly = aiUsers.Except(cvUsers).ToHashSet();
+            var cvOnly = cvUsers.Except(aiUsers).ToHashSet();
+            var noUse = userIds.Except(aiUsers.Union(cvUsers)).ToHashSet();
+            var totalUsers = users.Count;
+
+            var userEngagement = new List<object>
+        {
+            new { label = "AI Interview", count = aiOnly.Count, percentage = Math.Round(aiOnly.Count * 100.0 / totalUsers, 1) },
+            new { label = "CV Analysis", count = cvOnly.Count, percentage = Math.Round(cvOnly.Count * 100.0 / totalUsers, 1) },
+            new { label = "Both Services", count = both.Count, percentage = Math.Round(both.Count * 100.0 / totalUsers, 1) },
+            new { label = "Not Participated", count = noUse.Count, percentage = Math.Round(noUse.Count * 100.0 / totalUsers, 1) }
+        };
+
+            // Purchased Packages
+            var purchasedPackages = subscriptions
+                .Where(s => s.Plan != null)
+                .GroupBy(s => s.Plan.PlanName)
+                .Select(g => new
+                {
+                    package = g.Key,
+                    count = g.Count()
+                }).ToList();
+
+            // Conversion Rate
+            var totalSubs = subscriptions.Count;
+            var conversionRate = subscriptions
+                .Where(s => s.Plan != null)
+                .GroupBy(s => s.Plan.PlanName)
+                .Select(g => new
+                {
+                    label = g.Key,
+                    percentage = Math.Round(g.Count() * 100.0 / totalSubs, 1)
+                }).ToList();
+
+            return new
+            {
+                userEngagement,
+                purchasedPackages,
+                conversionRate
+            };
         }
     }
 }

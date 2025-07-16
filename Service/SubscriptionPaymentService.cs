@@ -145,11 +145,11 @@ namespace Service
 
             await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
                 var subscriptions = await _unitOfWork.UserSubscriptionRepository.FindAsync(
-            s => s.PlanId == 15 && s.PaymentStatus == "Active");
+            s => s.PlanId == 15 && s.PaymentStatus == "ACTIVE");
                 var freeSubscription = subscriptions.FirstOrDefault();
                 if (freeSubscription != null)
                 {
-                    freeSubscription.PaymentStatus = "Inactive";
+                    freeSubscription.PaymentStatus = "CANCELLED";
                     await _unitOfWork.UserSubscriptionRepository.UpdateAsync(freeSubscription);
                 }
             await _unitOfWork.SaveChanges();

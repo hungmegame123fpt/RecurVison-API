@@ -72,7 +72,7 @@ namespace Service
                     StartDate = DateTime.Now, // Will be set when payment is confirmed
                     EndDate = null,
                     IsAutoRenew =true,
-                    PaymentStatus = "PENDING",
+                    PaymentStatus = "ACTIVE",
                     LastPaymentDate = null,
                     CvRemaining = 5,
                     InterviewPerDayRemaining = 5,

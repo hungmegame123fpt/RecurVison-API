@@ -140,5 +140,11 @@ namespace RecurVison_API.Controllers
             var revenue = await _unitOfWork.UserSubscriptionRepository.GetRevenueByPlanAsync(planId);
             return Ok(new { planRevenue = revenue });
         }
+        [HttpGet("overview")]
+        public async Task<IActionResult> GetDashboardOverview()
+        {
+            var result = await _statisticsService.GetDashboardOverviewAsync();
+            return Ok(result);
+        }
     }
 }

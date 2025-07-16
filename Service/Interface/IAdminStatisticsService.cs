@@ -24,5 +24,6 @@ namespace Service.Interface
         Task<List<object>> GetCvAnalysisOverTimeAsync();
         Task<List<object>> GetInterviewCountOverTimeAsync();
         Task<List<object>> GetScoreDistributionAsync();
+        Task<object> GetDashboardOverviewAsync();
     }
 }
