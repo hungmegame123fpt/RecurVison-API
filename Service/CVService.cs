@@ -626,9 +626,9 @@ namespace Service
             };
         }
 
-        public async Task<ParsedDocumentResult> ParseCvAsync(int userId, int cvId)
+        public async Task<ParsedDocumentResult> ParseCvAsync(int cvId)
         {
-            var cv = await _unitOfWork.CVRepository.GetByUserIdAsync(userId, cvId);
+            var cv = await _unitOfWork.CVRepository.GetByIdAsync(cvId);
             if (cv == null)
                 throw new Exception("CV not found or access denied");
 

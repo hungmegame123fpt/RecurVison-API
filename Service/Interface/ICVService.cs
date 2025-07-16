@@ -19,7 +19,7 @@ namespace Service.Interface
 		Task<CVExportResponse> ExportCvAsync(CVExportRequest request);
         Task<List<string>> GetSupportedImportFormats();
         Task<List<string>> GetSupportedExportFormats();
-        Task<ParsedDocumentResult> ParseCvAsync(int userId, int cvId);
+        Task<ParsedDocumentResult> ParseCvAsync(int cvId);
         Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true);
         Task<List<CVDto>> GetAllCvAsync();
         Task<CvListResponse> GetUserCvsAsync(int userId);

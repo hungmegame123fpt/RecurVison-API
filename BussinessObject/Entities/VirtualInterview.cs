@@ -18,6 +18,8 @@ public partial class VirtualInterview
     public decimal? OverallScore { get; set; }
 
     public string? RecordingPath { get; set; }
+    public string? CvContent { get; set; }
+    public string? JobDescription { get; set; }
 
     public virtual ICollection<InterviewQuestion> InterviewQuestions { get; set; } = null!;
 

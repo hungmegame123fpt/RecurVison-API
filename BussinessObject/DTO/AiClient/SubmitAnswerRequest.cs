@@ -11,7 +11,5 @@ namespace BusinessObject.DTO.AiClient
         public int InterviewId { get; set; }
         public int QuestionId { get; set; }
         public string AnswerText { get; set; } = string.Empty;
-        public string CleanCvText { get; set; } = string.Empty;
-        public string JobDescription { get; set; } = string.Empty;
     }
 }

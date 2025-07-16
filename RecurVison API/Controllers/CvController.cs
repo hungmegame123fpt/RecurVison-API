@@ -157,7 +157,7 @@ namespace RecurVison_API.Controllers
         {
             try
             {
-                var result = await _cvService.ParseCvAsync(request.UserId, request.CvId);
+                var result = await _cvService.ParseCvAsync(request.CvId);
                 return Ok(result);
             }
             catch (Exception ex)

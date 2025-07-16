@@ -35,19 +35,22 @@ namespace Service
             {
                 UserId = request.UserId,
                 CreatedAt = DateTime.UtcNow,
-                Status = "in_progress"
+                Status = "in_progress",
+                JobDescription = request.JobDescription,
             };
 
             await _unitOfWork.VirtualInterviewRepository.CreateAsync(interview);
-            await _unitOfWork.SaveChanges(); // Lấy được interview.InterviewId
+            await _unitOfWork.SaveChanges();
 
             var sessionId = interview.InterviewId.ToString();
 
             // 2. Gọi ParseCv API để lấy plain text
-            var parsedCv = await _cVService.ParseCvAsync(request.UserId, request.CvId);
+            var parsedCv = await _cVService.ParseCvAsync(request.CvId);
             if (parsedCv == null || string.IsNullOrWhiteSpace(parsedCv.PlainTextContent))
                 throw new Exception("CV text not found or empty.");
-
+            interview.CvContent = parsedCv.PlainTextContent;
+            await _unitOfWork.VirtualInterviewRepository.UpdateAsync(interview);
+            await _unitOfWork.SaveChanges();
             // 3. Gọi AI với cv_text + job_description + session_id (interviewId)
             var aiRequest = new AiSessionRequest
             {
@@ -107,8 +110,8 @@ namespace Service
             {
                 SessionId = request.InterviewId.ToString(),
                 AnswerText = request.AnswerText,
-                CleanedCvText = request.CleanCvText,
-                JobDescription = request.JobDescription,
+                CleanedCvText =interview.CvContent,
+                JobDescription = interview.JobDescription,
                 //PreviousQuestions = new List<string> { question.QuestionText ?? "" }
             };
             aiRequest.PreviousQuestions ??= new List<string>();
