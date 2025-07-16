@@ -165,7 +165,7 @@ namespace Repository
         public async Task<decimal> GetTotalRevenueAsync()
         {
             var subscriptions = await GetAllAsync(
-                filter: s => s.PaymentStatus == "ACTIVE" || s.PaymentStatus == "EXPIRED",
+                filter: s => s.PaymentStatus == "ACTIVE" || s.PaymentStatus == "EXPIRED" || s.PaymentStatus == "CANCELLED",
                 includeProperties: "Plan"
             );
             return subscriptions.Sum(s => s.Plan?.Price ?? 0);
@@ -175,7 +175,7 @@ namespace Repository
         {
             var subscriptions = await GetAllAsync(
                 filter: s => s.PlanId == planId &&
-                            (s.PaymentStatus == "ACTIVE" || s.PaymentStatus == "EXPIRED"),
+                            (s.PaymentStatus == "ACTIVE" || s.PaymentStatus == "EXPIRED" || s.PaymentStatus == "CANCELLED"),
                 includeProperties: "Plan"
             );
             return subscriptions.Sum(s => s.Plan?.Price ?? 0);
