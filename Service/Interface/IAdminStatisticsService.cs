@@ -28,5 +28,8 @@ namespace Service.Interface
         Task<object> GetDashboardOverviewAsync();
         Task<object> GetPackagePurchaseStatsAsync();
         Task<List<UserListDto>> GetUserListAsync();
+        Task<TimeSeriesAnalysisDto> GetCvAnalysesAsync(DateTime from, DateTime to, string range);
+        Task<TimeSeriesAnalysisDto> GetInterviewSessionsAsync(DateTime from, DateTime to, string range);
+
     }
 }

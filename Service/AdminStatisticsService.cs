@@ -4,6 +4,7 @@ using Repository.Interface;
 using Service.Interface;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -196,5 +197,78 @@ namespace Service
 
             return result;
         }
+        public async Task<TimeSeriesAnalysisDto> GetInterviewSessionsAsync(DateTime from, DateTime to, string range)
+        {
+            var data = await _unitOfWork.VirtualInterviewRepository
+                .GetAllAsync(i => i.CreatedAt >= from && i.CreatedAt <= to);
+
+            return GroupTimeSeries(data.Select(i => i.CreatedAt!.Value), range);
+        }
+
+        public async Task<TimeSeriesAnalysisDto> GetCvAnalysesAsync(DateTime from, DateTime to, string range)
+        {
+            var data = await _unitOfWork.CvAnalysisResult
+                .GetAllAsync(r => r.CreatedAt >= from && r.CreatedAt <= to);
+
+            return GroupTimeSeries(data.Select(r => r.CreatedAt!), range);
+        }
+
+        private TimeSeriesAnalysisDto GroupTimeSeries(IEnumerable<DateTime> dates, string range)
+        {
+            IEnumerable<IGrouping<DateTime, DateTime>> grouped;
+
+            switch (range.ToLower())
+            {
+                case "weekly":
+                    grouped = dates
+                        .GroupBy(d =>
+                        {
+                            var calendar = CultureInfo.InvariantCulture.Calendar;
+                            int week = calendar.GetWeekOfYear(d, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
+                            int year = d.Year;
+
+                            // Get the first day of the year
+                            DateTime jan1 = new DateTime(year, 1, 1);
+
+                            // Calculate the first day of the target week
+                            int daysOffset = (week - 1) * 7;
+                            DateTime weekStart = jan1.AddDays(daysOffset);
+
+                            // Adjust to Monday (start of the week)
+                            while (weekStart.DayOfWeek != DayOfWeek.Monday)
+                                weekStart = weekStart.AddDays(-1);
+
+                            return weekStart.Date; // group key = Monday of that week
+                        });
+                    break;
+                case "monthly":
+                    grouped = dates.GroupBy(d => new DateTime(d.Year, d.Month, 1));
+                    break;
+                default:
+                    grouped = dates.GroupBy(d => d.Date);
+                    break;
+            }
+
+            var result = grouped
+                .Select(g => new TimeSeriesPointDto
+                {
+                    Date = g.Key,
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            return new TimeSeriesAnalysisDto
+            {
+                Data = result,
+                Peak = result.OrderByDescending(x => x.Count).FirstOrDefault(),
+                Low = result.OrderBy(x => x.Count).FirstOrDefault()
+            };
+        }
+    }
+    public class WeekGroup
+    {
+        public int Week { get; set; }
+        public List<DateTime> Dates { get; set; }
     }
 }

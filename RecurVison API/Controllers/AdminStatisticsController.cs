@@ -159,5 +159,40 @@ namespace RecurVison_API.Controllers
             var users = await _statisticsService.GetUserListAsync();
             return Ok(users);
         }
+        [HttpGet("interview-sessions")]
+        public async Task<IActionResult> GetInterviewSessions([FromQuery] string range = "daily")
+        {
+            var (from, to) = GetDateRange(range);
+            var result = await _statisticsService.GetInterviewSessionsAsync(from, to, range);
+            return Ok(result);
+        }
+
+        [HttpGet("cv-analysis")]
+        public async Task<IActionResult> GetCvAnalyses([FromQuery] string range = "daily")
+        {
+            var (from, to) = GetDateRange(range);
+            var result = await _statisticsService.GetCvAnalysesAsync(from, to, range);
+            return Ok(result);
+        }
+        private (DateTime from, DateTime to) GetDateRange(string range)
+        {
+            var to = DateTime.UtcNow.Date;
+            DateTime from;
+
+            switch (range.ToLower())
+            {
+                case "weekly":
+                    from = to.AddDays(-7 * 6); // last 7 weeks (inclusive)
+                    break;
+                case "monthly":
+                    from = new DateTime(to.Year, to.Month, 1).AddMonths(-6); // last 7 months
+                    break;
+                default:
+                    from = to.AddDays(-6); // last 7 days
+                    break;
+            }
+
+            return (from, to);
+        }
     }
 }
