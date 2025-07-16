@@ -27,21 +27,21 @@ namespace RecurVison_API.Controllers
         [HttpGet("cvs/new-today")]
         public async Task<IActionResult> GetNewCvsToday()
         {
-            var count = await _statisticsService.GetNewCvsTodayAsync();
+            var count = await _statisticsService.GetNewCvsStatsAsync();
             return Ok(count);
         }
 
         [HttpGet("interviews/new-today")]
         public async Task<IActionResult> GetNewInterviewsToday()
         {
-            var count = await _statisticsService.GetNewInterviewsTodayAsync();
+            var count = await _statisticsService.GetNewInterviewsStatsAsync();
             return Ok(count);
         }
 
         [HttpGet("users/new-today")]
         public async Task<IActionResult> GetNewUsersToday()
         {
-            var count = await _statisticsService.GetNewUsersTodayAsync();
+            var count = await _statisticsService.GetNewUsersStatsAsync();
             return Ok(count);
         }
 

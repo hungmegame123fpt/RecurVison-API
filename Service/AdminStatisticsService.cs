@@ -18,14 +18,53 @@ namespace Service
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<int> GetNewCvsTodayAsync() =>
-        await _unitOfWork.CVRepository.CountAsync(c => c.UploadedAt.Value.Date == DateTime.UtcNow.Date);
+        public async Task<StatsComparisonDto> GetNewCvsStatsAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var yesterday = today.AddDays(-1);
 
-        public async Task<int> GetNewInterviewsTodayAsync() =>
-            await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.CreatedAt.Value.Date == DateTime.UtcNow.Date);
+            var todayCount = await _unitOfWork.CVRepository.CountAsync(c => c.UploadedAt.HasValue && c.UploadedAt.Value.Date == today);
+            var yesterdayCount = await _unitOfWork.CVRepository.CountAsync(c => c.UploadedAt.HasValue && c.UploadedAt.Value.Date == yesterday);
 
-        public async Task<int> GetNewUsersTodayAsync() =>
-            await _unitOfWork.UserRepository.CountAsync(u => u.CreatedAt.Value.Date == DateTime.UtcNow.Date);
+            return new StatsComparisonDto
+            {
+                Today = todayCount,
+                Yesterday = yesterdayCount,
+                PercentageChange = CalculatePercentageChange(todayCount, yesterdayCount)
+            };
+        }
+
+        public async Task<StatsComparisonDto> GetNewInterviewsStatsAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var yesterday = today.AddDays(-1);
+
+            var todayCount = await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.CreatedAt.HasValue && i.CreatedAt.Value.Date == today);
+            var yesterdayCount = await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.CreatedAt.HasValue && i.CreatedAt.Value.Date == yesterday);
+
+            return new StatsComparisonDto
+            {
+                Today = todayCount,
+                Yesterday = yesterdayCount,
+                PercentageChange = CalculatePercentageChange(todayCount, yesterdayCount)
+            };
+        }
+
+        public async Task<StatsComparisonDto> GetNewUsersStatsAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var yesterday = today.AddDays(-1);
+
+            var todayCount = await _unitOfWork.UserRepository.CountAsync(u => u.CreatedAt.HasValue && u.CreatedAt.Value.Date == today);
+            var yesterdayCount = await _unitOfWork.UserRepository.CountAsync(u => u.CreatedAt.HasValue && u.CreatedAt.Value.Date == yesterday);
+
+            return new StatsComparisonDto
+            {
+                Today = todayCount,
+                Yesterday = yesterdayCount,
+                PercentageChange = CalculatePercentageChange(todayCount, yesterdayCount)
+            };
+        }
 
         public async Task<int> GetTotalCvsAsync() =>
             await _unitOfWork.CVRepository.CountAsync();
@@ -44,18 +83,13 @@ namespace Service
         public async Task<int> GetInterviewsInProgressAsync() =>
             await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.Status == "InProgress");
 
-        //public async Task<List<JobField>> GetTopLikedJobsAsync(int top = 5) =>
-        //    (await _jobRepo.GetAllAsync())
-        //        .OrderByDescending(j => j.LikeCount)
-        //        .Take(top)
-        //        .ToList();
+        private double CalculatePercentageChange(int today, int yesterday)
+        {
+            if (yesterday == 0)
+                return today > 0 ? 100 : 0;
 
-        //public async Task<List<Course>> GetTopLikedCoursesAsync(int top = 5) =>
-        //    (await _courseRepo.GetAllAsync())
-        //        .OrderByDescending(c => c.LikeCount)
-        //        .Take(top)
-        //        .ToList();
-
+            return ((double)(today - yesterday) / yesterday) * 100;
+        }
 
 
         public async Task<object> GetCvFieldDistributionAsync() => await GetTotalCvFieldsAsync();

@@ -10,9 +10,9 @@ namespace Service.Interface
 {
     public interface IAdminStatisticsService
     {
-        Task<int> GetNewCvsTodayAsync();
-        Task<int> GetNewInterviewsTodayAsync();
-        Task<int> GetNewUsersTodayAsync();
+        Task<StatsComparisonDto> GetNewCvsStatsAsync();
+        Task<StatsComparisonDto> GetNewInterviewsStatsAsync();
+        Task<StatsComparisonDto> GetNewUsersStatsAsync();
         Task<int> GetTotalCvsAsync();
         Task<object> GetTotalCvFieldsAsync();
         Task<int> GetTotalInterviewsAsync();
