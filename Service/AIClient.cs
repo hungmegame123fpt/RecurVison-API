@@ -99,11 +99,37 @@ namespace Service
         }
         public async Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request)
         {
-            var response = await _httpClient.PostAsJsonAsync("https://recruvision-h8freyfdh3bsb9fs.southeastasia-01.azurewebsites.net/api/v1/question-composer/answer", request);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<AiAnswerEvaluateResponse>();
+            try
+            {
+                var json = JsonConvert.SerializeObject(request);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Create the request
+                var httpRequest = new HttpRequestMessage(HttpMethod.Post, "https://recruvision-h8freyfdh3bsb9fs.southeastasia-01.azurewebsites.net/api/v1/question-composer/answer")
+                {
+                    Content = content
+                };
+
+                httpRequest.Headers.Add("lang", "vi");
+                httpRequest.Headers.Add("accept", "application/json");
+
+                var response = await _httpClient.SendAsync(httpRequest);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("AI answer evaluation failed: {StatusCode} - {Error}", response.StatusCode, errorContent);
+                    throw new Exception($"AI error: {response.StatusCode} - {errorContent}");
+                }
+
+                var result = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<AiAnswerEvaluateResponse>(result, _jsonOptions)!;
+            }
+            catch(Exception ex) {
+                _logger.LogError(ex, "Error calling AI /question-composer/answer");
+                throw;
+            }
         }
-        public async Task<List<SuggestedJob>> GetSuggestedJobsForCvAsync(int cvId)
+        public async Task<AiJobMatchingData> GetSuggestedJobsForCvAsync(int cvId)
         {
             var analysis = await _unitOfWork.CvAnalysisResult.GetLatestAnalysisForCvAsync(cvId);
             if (analysis == null)
@@ -165,7 +191,11 @@ namespace Service
 
             var json = await response.Content.ReadAsStringAsync();
             var aiResponse = JsonSerializer.Deserialize<AiJobMatchingResponse>(json, _jsonOptions);
-            return aiResponse?.Data.SuggestedJobs ?? new List<SuggestedJob>();
+            return new AiJobMatchingData
+            {
+                SuggestedJobs = aiResponse?.Data.SuggestedJobs ?? new(),
+                SuggestedCourses = aiResponse?.Data.SuggestedCourses ?? new()
+            };
         }
     }
         public class AiCvAnalysisResponse
@@ -186,6 +216,8 @@ namespace Service
     {
         [JsonPropertyName("suggested_jobs")]
         public List<SuggestedJob> SuggestedJobs { get; set; } = new();
+        [JsonPropertyName("suggested_courses")]
+        public List<SuggestedCourse> SuggestedCourses { get; set; } = new();
     }
 
     public class AiJobMatchingResponse
@@ -193,4 +225,22 @@ namespace Service
         [JsonPropertyName("data")]
         public AiJobMatchingData Data { get; set; } = new();
     }
+    public class SuggestedCourse
+    {
+        [JsonPropertyName("course_name")]
+        public string CourseName { get; set; } = string.Empty;
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("estimated_duration")]
+        public string EstimatedDuration { get; set; } = string.Empty;
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = string.Empty;
+    }
+
 }

@@ -9,6 +9,7 @@ using Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,7 +65,23 @@ namespace Service
 
                 // Save UserRole
                 await _unitOfWork.UserRoleRepository.CreateAsync(userRole);
-                await _unitOfWork.UserRoleRepository.SaveChangesAsync();
+                var subscription = new UserSubscription
+                {
+                    UserId = user.UserId,
+                    PlanId = 15,
+                    StartDate = DateTime.Now, // Will be set when payment is confirmed
+                    EndDate = null,
+                    IsAutoRenew =true,
+                    PaymentStatus = "PENDING",
+                    LastPaymentDate = null,
+                    CvRemaining = 5,
+                    InterviewPerDayRemaining = 5,
+                    VoiceInterviewRemaining = 1,
+                    LastQuotaResetDate = DateTime.Now,
+                };
+
+                await _unitOfWork.UserSubscriptionRepository.CreateAsync(subscription);
+                await _unitOfWork.SaveChanges();
                 return new APIResponse<User>
                 {
                     Success = true,

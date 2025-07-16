@@ -74,9 +74,12 @@ namespace RecurVison_API.Controllers
                 return Ok(new { success = false, error = ex.Message });
             }
         }
-        [HttpGet("user/{userId}/active")]
-        public async Task<IActionResult> GetUserActiveSubscription(int userId)
+        [HttpGet("user/active")]
+        public async Task<IActionResult> GetUserActiveSubscription()
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("User ID not found in claims.");
             var subscription = await _subscriptionService.GetUserActiveSubscriptionAsync(userId);
 
             if (subscription == null)
@@ -87,9 +90,12 @@ namespace RecurVison_API.Controllers
             return Ok(subscription);
         }
 
-        [HttpGet("user/{userId}/history")]
-        public async Task<IActionResult> GetUserSubscriptionHistory(int userId)
+        [HttpGet("user/history")]
+        public async Task<IActionResult> GetUserSubscriptionHistory()
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("User ID not found in claims.");
             var subscriptions = await _subscriptionService.GetUserActiveSubscriptionAsync(userId);
             return Ok(subscriptions);
         }

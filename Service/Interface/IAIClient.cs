@@ -15,7 +15,7 @@ namespace Service.Interface
         Task<AiSessionResponse?> StartSessionAsync(AiSessionRequest request);
         Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request);
         Task<AiCvAnalysisResponse> AnalyzeCvAsync(int Cvid, IFormFile jdFile);
-        Task<List<SuggestedJob>> GetSuggestedJobsForCvAsync(int cvId);
+        Task<AiJobMatchingData> GetSuggestedJobsForCvAsync(int cvId);
 
 
 

@@ -47,7 +47,7 @@ namespace Service
             }
             // Check if user already has active subscription using repository
             var existingSubscription = await _unitOfWork.UserSubscriptionRepository.GetUserActiveSubscriptionAsync(request.UserId);
-            if (existingSubscription != null)
+            if (existingSubscription != null && existingSubscription.PlanId != 15)
             {
                 await _unitOfWork.RollbackAsync();
                 return new Response
@@ -55,8 +55,7 @@ namespace Service
                     Success = false,
                     Message = "User already has an active subscription"
                 };
-            }
-
+            }          
             // Create pending subscription record using repository
             var subscription = new UserSubscription
             {
@@ -145,6 +144,14 @@ namespace Service
             subscription.LastPaymentDate = startDate;
 
             await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
+                var subscriptions = await _unitOfWork.UserSubscriptionRepository.FindAsync(
+            s => s.PlanId == 15 && s.PaymentStatus == "Active");
+                var freeSubscription = subscriptions.FirstOrDefault();
+                if (freeSubscription != null)
+                {
+                    freeSubscription.PaymentStatus = "Inactive";
+                    await _unitOfWork.UserSubscriptionRepository.UpdateAsync(freeSubscription);
+                }
             await _unitOfWork.SaveChanges();
             await _unitOfWork.CommitAsync();
             //Update User Subscriptipn status

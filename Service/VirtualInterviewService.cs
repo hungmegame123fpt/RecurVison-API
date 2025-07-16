@@ -109,9 +109,9 @@ namespace Service
                 AnswerText = request.AnswerText,
                 CleanedCvText = request.CleanCvText,
                 JobDescription = request.JobDescription,
-                PreviousQuestions = new List<string> { question.QuestionText ?? "" }
+                //PreviousQuestions = new List<string> { question.QuestionText ?? "" }
             };
-
+            aiRequest.PreviousQuestions ??= new List<string>();
             var aiResponse = await _aiClient.EvaluateAnswerAsync(aiRequest);
             if (aiResponse?.Data?.Feedback == null)
                 throw new Exception("AI feedback response invalid.");
