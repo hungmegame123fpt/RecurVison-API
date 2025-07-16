@@ -41,7 +41,7 @@ namespace RecurVison_API.Controllers
             {
                 PlanId = planId,
                 UserId = userId,
-                Description = $"{user.LastName} {user.FirstName} transfer",
+                Description = "",
                 ReturnUrl = "https://recruvision.io.vn/user/pricing",
                 CancelUrl = "https://recruvision.io.vn/user/pricing",
             };
