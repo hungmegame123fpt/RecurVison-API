@@ -63,7 +63,7 @@ namespace Service
                 PlanId = request.PlanId,
                 StartDate = null, // Will be set when payment is confirmed
                 EndDate = null,
-                IsAutoRenew = request.IsAutoRenew,
+                IsAutoRenew = false,
                 PaymentStatus = "PENDING",
                 LastPaymentDate = null,
                 CvRemaining = plan.MaxCvsAllowed,
@@ -157,9 +157,10 @@ namespace Service
                 {
                     freeSubscription.PaymentStatus = "CANCELLED";
                     await _unitOfWork.UserSubscriptionRepository.UpdateAsync(freeSubscription);
+
+                    await _unitOfWork.SaveChanges();
+                    await _unitOfWork.CommitAsync();
                 }
-                await _unitOfWork.SaveChanges();
-                await _unitOfWork.CommitAsync();
                 _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
             subscription.SubscriptionId, subscription.UserId);
 
