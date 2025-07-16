@@ -153,5 +153,11 @@ namespace RecurVison_API.Controllers
             var stats = await _statisticsService.GetPackagePurchaseStatsAsync();
             return Ok(stats);
         }
+        [HttpGet("admin/userList")]
+        public async Task<IActionResult> GetUserList()
+        {
+            var users = await _statisticsService.GetUserListAsync();
+            return Ok(users);
+        }
     }
 }

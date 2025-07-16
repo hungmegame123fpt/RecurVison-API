@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTO;
+using BusinessObject.Entities;
 using Repository.Interface;
 using Service.Interface;
 using System;
@@ -138,6 +139,28 @@ namespace Service
             }).ToList();
 
             return stats;
+        }
+        public async Task<List<UserListDto>> GetUserListAsync()
+        {
+            var users = await _unitOfWork.UserRepository
+                .GetAllAsync(includeProperties: "UserRoleUsers");
+
+            var result = new List<UserListDto>();
+
+            foreach (var user in users)
+            {
+                var role = await _unitOfWork.UserRoleRepository.CheckRole(user);
+                result.Add(new UserListDto
+                {
+                    Name = $"{user.LastName} {user.FirstName}",
+                    Email = user.Email,
+                    Role = role,
+                    Status = user.AccountStatus,
+                    DateCreated = user.CreatedAt
+                });
+            }
+
+            return result;
         }
     }
 }

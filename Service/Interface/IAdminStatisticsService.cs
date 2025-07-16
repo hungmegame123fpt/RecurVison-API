@@ -1,4 +1,5 @@
-﻿using BusinessObject.Entities;
+﻿using BusinessObject.DTO;
+using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,5 +27,6 @@ namespace Service.Interface
         Task<List<object>> GetScoreDistributionAsync();
         Task<object> GetDashboardOverviewAsync();
         Task<object> GetPackagePurchaseStatsAsync();
+        Task<List<UserListDto>> GetUserListAsync();
     }
 }
