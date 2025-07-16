@@ -150,18 +150,7 @@ namespace Service
             await _unitOfWork.UserRepository.UpdateAsync(user);
             await _unitOfWork.SaveChanges();
             await _unitOfWork.CommitAsync();         
-                var subscriptions = await _unitOfWork.UserSubscriptionRepository.FindAsync(
-                s => s.PlanId == 15 && s.PaymentStatus == "ACTIVE");
-                var freeSubscription = subscriptions.FirstOrDefault();
-                if (freeSubscription != null)
-                {
-                    freeSubscription.PaymentStatus = "CANCELLED";
-                    await _unitOfWork.UserSubscriptionRepository.UpdateAsync(freeSubscription);
-
-                    await _unitOfWork.SaveChanges();
-                    await _unitOfWork.CommitAsync();
-                }
-                _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
+            _logger.LogInformation("Subscription {SubscriptionId} activated for user {UserId}",
             subscription.SubscriptionId, subscription.UserId);
 
             return true;
