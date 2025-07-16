@@ -40,10 +40,10 @@ namespace RecurVison_API.Controllers
             var request = new CreatePaymentLinkRequest
             {
                 PlanId = planId,
-                UserId = userId,
-                Description = $"{user.LastName} {user.FirstName} transfer for {plan.PlanName}",
-                ReturnUrl = "https://recruvision.io.vn/user/pricing?fbclid=IwY2xjawLkrWdleHRuA2FlbQIxMABicmlkETE2MTBLaGtnamxFU1RWTlBHAR6nVe_4s9-p8EA5Y51Ryigf4mkPMdu8yrHzUzCSTZ4t8FaL8Rn7eq8vQXsd_w_aem_2_EunTIR69mx03PpICH4MQ",
-                CancelUrl = "https://recruvision.io.vn/user/pricing?fbclid=IwY2xjawLkrWdleHRuA2FlbQIxMABicmlkETE2MTBLaGtnamxFU1RWTlBHAR6nVe_4s9-p8EA5Y51Ryigf4mkPMdu8yrHzUzCSTZ4t8FaL8Rn7eq8vQXsd_w_aem_2_EunTIR69mx03PpICH4MQ",
+                UserId = 48,
+                Description = $"{user.LastName} {user.FirstName} transfer",
+                ReturnUrl = "https://recruvision.io.vn/user/pricing",
+                CancelUrl = "https://recruvision.io.vn/user/pricing",
             };
             var result = await _subscriptionService.CreateSubscriptionPaymentAsync(request);
 

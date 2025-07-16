@@ -142,14 +142,14 @@ namespace Service
             subscription.StartDate = startDate;
             subscription.EndDate = endDate;
             subscription.LastPaymentDate = startDate;
+            await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
             await _unitOfWork.SaveChanges();
             await _unitOfWork.CommitAsync();
             //Update User Subscriptipn status
             user.SubscriptionStatus = "ACTIVE";
             await _unitOfWork.UserRepository.UpdateAsync(user);
             await _unitOfWork.SaveChanges();
-            await _unitOfWork.CommitAsync();
-                await _unitOfWork.UserSubscriptionRepository.UpdateAsync(subscription);
+            await _unitOfWork.CommitAsync();         
                 var subscriptions = await _unitOfWork.UserSubscriptionRepository.FindAsync(
                 s => s.PlanId == 15 && s.PaymentStatus == "ACTIVE");
                 var freeSubscription = subscriptions.FirstOrDefault();
