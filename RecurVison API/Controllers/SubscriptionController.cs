@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace RecurVison_API.Controllers
 {
-    [Authorize(AuthenticationSchemes = "CookieAuth")]
+    //[Authorize(AuthenticationSchemes = "CookieAuth")]
     [Route("api/[controller]")]
     [ApiController]
     public class SubscriptionController : ControllerBase
