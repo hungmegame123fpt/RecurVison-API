@@ -40,7 +40,7 @@ namespace RecurVison_API.Controllers
             var request = new CreatePaymentLinkRequest
             {
                 PlanId = planId,
-                UserId = 48,
+                UserId = userId,
                 Description = $"{user.LastName} {user.FirstName} transfer",
                 ReturnUrl = "https://recruvision.io.vn/user/pricing",
                 CancelUrl = "https://recruvision.io.vn/user/pricing",
