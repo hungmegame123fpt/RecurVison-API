@@ -49,8 +49,7 @@ namespace Repository
         {
             var subscriptions = await GetAllAsync(
                 filter: s => s.UserId == userId &&
-                            s.PaymentStatus == "ACTIVE" &&
-                            s.EndDate > DateTime.UtcNow,
+                            s.PaymentStatus == "ACTIVE",
                 includeProperties: "Plan,User"
             );
             return subscriptions.OrderByDescending(s => s.StartDate).FirstOrDefault();

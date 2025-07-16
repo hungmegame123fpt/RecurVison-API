@@ -25,5 +25,6 @@ namespace Service.Interface
         Task<List<object>> GetInterviewCountOverTimeAsync();
         Task<List<object>> GetScoreDistributionAsync();
         Task<object> GetDashboardOverviewAsync();
+        Task<object> GetPackagePurchaseStatsAsync();
     }
 }

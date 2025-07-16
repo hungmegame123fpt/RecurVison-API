@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interface;
+using Service;
 using Service.Interface;
 
 namespace RecurVison_API.Controllers
@@ -140,11 +141,17 @@ namespace RecurVison_API.Controllers
             var revenue = await _unitOfWork.UserSubscriptionRepository.GetRevenueByPlanAsync(planId);
             return Ok(new { planRevenue = revenue });
         }
-        [HttpGet("overview")]
+        [HttpGet("user-engagement")]
         public async Task<IActionResult> GetDashboardOverview()
         {
             var result = await _statisticsService.GetDashboardOverviewAsync();
             return Ok(result);
+        }
+        [HttpGet("package-purchases")]
+        public async Task<IActionResult> GetPackagePurchaseStats()
+        {
+            var stats = await _statisticsService.GetPackagePurchaseStatsAsync();
+            return Ok(stats);
         }
     }
 }

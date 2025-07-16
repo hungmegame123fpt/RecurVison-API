@@ -111,34 +111,33 @@ namespace Service
             new { label = "Both Services", count = both.Count, percentage = Math.Round(both.Count * 100.0 / totalUsers, 1) },
             new { label = "Not Participated", count = noUse.Count, percentage = Math.Round(noUse.Count * 100.0 / totalUsers, 1) }
         };
+            return userEngagement;
+        }
+        public async Task<object> GetPackagePurchaseStatsAsync()
+        {
+            var allPlans = await _unitOfWork.SubscriptionPlanRepository.GetAllAsync();
 
-            // Purchased Packages
-            var purchasedPackages = subscriptions
-                .Where(s => s.Plan != null)
-                .GroupBy(s => s.Plan.PlanName)
-                .Select(g => new
-                {
-                    package = g.Key,
-                    count = g.Count()
-                }).ToList();
+            var today = DateTime.UtcNow.Date;
+            var weekStart = today.AddDays(-(int)today.DayOfWeek);
+            var monthStart = new DateTime(today.Year, today.Month, 1);
 
-            // Conversion Rate
-            var totalSubs = subscriptions.Count;
-            var conversionRate = subscriptions
-                .Where(s => s.Plan != null)
-                .GroupBy(s => s.Plan.PlanName)
-                .Select(g => new
-                {
-                    label = g.Key,
-                    percentage = Math.Round(g.Count() * 100.0 / totalSubs, 1)
-                }).ToList();
+            var allSubs = await _unitOfWork.UserSubscriptionRepository.GetAllAsync(includeProperties: "Plan");
 
-            return new
+            var stats = allPlans.Select(plan =>
             {
-                userEngagement,
-                purchasedPackages,
-                conversionRate
-            };
+                var planSubs = allSubs.Where(sub => sub.PlanId == plan.PlanId);
+
+                return new
+                {
+                    PlanId = plan.PlanId,
+                    PlanName = plan.PlanName,
+                    DailyCount = planSubs.Count(s => s.StartDate.HasValue && s.StartDate.Value.Date == today),
+                    WeeklyCount = planSubs.Count(s => s.StartDate.HasValue && s.StartDate.Value.Date >= weekStart),
+                    MonthlyCount = planSubs.Count(s => s.StartDate.HasValue && s.StartDate.Value.Date >= monthStart)
+                };
+            }).ToList();
+
+            return stats;
         }
     }
 }
