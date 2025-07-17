@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
@@ -195,6 +196,26 @@ namespace Service
                     IsPrimary = true
                 };
                 await _unitOfWork.UserRoleRepository.CreateAsync(userRole);
+                var subscription = await _unitOfWork.UserSubscriptionRepository.GetUserActiveSubscriptionAsync(createdUser.UserId);
+                if (subscription == null)
+                {
+                    var userSubscription = new UserSubscription
+                    {
+                        UserId = createdUser.UserId,
+                        PlanId = 15,
+                        StartDate = DateTime.Now, // Will be set when payment is confirmed
+                        EndDate = null,
+                        IsAutoRenew = true,
+                        PaymentStatus = "ACTIVE",
+                        LastPaymentDate = null,
+                        CvRemaining = 5,
+                        InterviewPerDayRemaining = 5,
+                        VoiceInterviewRemaining = 1,
+                        LastQuotaResetDate = DateTime.Now,
+                    };
+
+                    await _unitOfWork.UserSubscriptionRepository.CreateAsync(userSubscription);
+                }
                 await _unitOfWork.UserRoleRepository.SaveChangesAsync();
                 return new APIResponse<User>
                 {
