@@ -91,7 +91,11 @@ namespace Repository
                 .Include(i => i.User)
                 .FirstOrDefaultAsync(i => i.InterviewId == interviewId);
         }
-
+        public async Task<int> CountCompletedInterviewsAsync(DateTime date)
+        {
+            return await _db.VirtualInterviews
+                .CountAsync(i => i.Status == "completed");
+        }
         public async Task<List<VirtualInterview>> GetCompletedInterviewsAsync()
         {
             return await dbSet

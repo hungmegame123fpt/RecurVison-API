@@ -14,5 +14,6 @@ namespace Repository.Interface
         Task<VirtualInterview?> GetInterviewWithQuestionsAsync(int interviewId);
         Task<List<VirtualInterview>> GetCompletedInterviewsAsync();
         Task<List<VirtualInterview>> GetInterviewsByStatusAsync(string status);
+        Task<int> CountCompletedInterviewsAsync(DateTime date);
     }
 }

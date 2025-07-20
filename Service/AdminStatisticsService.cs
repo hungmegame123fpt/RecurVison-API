@@ -40,8 +40,8 @@ namespace Service
             var today = DateTime.UtcNow.Date;
             var yesterday = today.AddDays(-1);
 
-            var todayCount = await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.CreatedAt.HasValue && i.CreatedAt.Value.Date == today);
-            var yesterdayCount = await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.CreatedAt.HasValue && i.CreatedAt.Value.Date == yesterday);
+            var todayCount = await _unitOfWork.VirtualInterviewRepository.CountCompletedInterviewsAsync(today);
+            var yesterdayCount = await _unitOfWork.VirtualInterviewRepository.CountCompletedInterviewsAsync(yesterday);
 
             return new StatsComparisonDto
             {
@@ -80,9 +80,8 @@ namespace Service
 
         public async Task<int> GetTotalInterviewsAsync() =>
             await _unitOfWork.VirtualInterviewRepository.CountAsync();
-
         public async Task<int> GetInterviewsInProgressAsync() =>
-            await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.Status == "InProgress");
+            await _unitOfWork.VirtualInterviewRepository.CountAsync(i => i.Status == "in_progress");
 
         private double CalculatePercentageChange(int today, int yesterday)
         {
@@ -212,7 +211,53 @@ namespace Service
 
             return GroupTimeSeries(data.Select(r => r.CreatedAt!), range);
         }
+        public async Task<PremiumConversionRateDto> GetPremiumConversionRateAsync()
+        {
+            var users = await _unitOfWork.UserRepository.GetAllUsersWithSubscriptionsAsync();
+            var totalUsers = users.Count;
 
+            var groupStats = users.GroupBy(user =>
+            {
+                var activeSub = user.UserSubscriptions.FirstOrDefault();
+                return activeSub?.Plan?.PlanName ?? "None";
+            })
+            .Select(g => new ConversionRateItemDto
+            {
+                PlanName = g.Key,
+                UserCount = g.Count(),
+                Percentage = Math.Round((double)g.Count() * 100 / totalUsers, 2)
+            })
+            .ToList();
+
+            return new PremiumConversionRateDto
+            {
+                TotalUsers = totalUsers,
+                Breakdown = groupStats
+            };
+        }
+        public async Task<List<ScoreHistogramBinDto>> GetUserScoreHistogramAsync()
+        {
+            var interviews = await _unitOfWork.VirtualInterviewRepository.FindAsync(
+                i => i.Status == "completed" && i.OverallScore != null);
+
+            var bins = new List<ScoreHistogramBinDto>();
+            for (decimal i = 0; i < 10; i += 0.5m)
+            {
+                decimal min = i;
+                decimal max = i + 0.5m;
+
+                var count = interviews.Count(iw =>
+                    iw.OverallScore >= min && iw.OverallScore < max);
+
+                bins.Add(new ScoreHistogramBinDto
+                {
+                    Range = $"{min:F1}-{max:F1}",
+                    Count = count
+                });
+            }
+
+            return bins;
+        }
         private TimeSeriesAnalysisDto GroupTimeSeries(IEnumerable<DateTime> dates, string range)
         {
             IEnumerable<IGrouping<DateTime, DateTime>> grouped;

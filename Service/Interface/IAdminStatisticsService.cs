@@ -30,6 +30,8 @@ namespace Service.Interface
         Task<List<UserListDto>> GetUserListAsync();
         Task<TimeSeriesAnalysisDto> GetCvAnalysesAsync(DateTime from, DateTime to, string range);
         Task<TimeSeriesAnalysisDto> GetInterviewSessionsAsync(DateTime from, DateTime to, string range);
+        Task<PremiumConversionRateDto> GetPremiumConversionRateAsync();
+        Task<List<ScoreHistogramBinDto>> GetUserScoreHistogramAsync();
 
     }
 }

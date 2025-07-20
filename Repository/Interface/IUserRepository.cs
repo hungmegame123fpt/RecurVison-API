@@ -24,5 +24,6 @@ namespace Repository.Interface
         Task<PaginatedResult<User>> GetUsersWithPaginationAsync(UserFilterDto filter);
         Task<UserStatsDto> GetUserStatsAsync();
         Task<List<User>> GetNewSignupsAsync(DateTime fromDate);
+        Task<List<User>> GetAllUsersWithSubscriptionsAsync();
     }
 }

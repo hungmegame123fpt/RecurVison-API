@@ -167,5 +167,12 @@ namespace Repository
             await _db.SaveChangesAsync();
             return usersToCancel.Count;
         }
+        public async Task<List<User>> GetAllUsersWithSubscriptionsAsync()
+        {
+            return await _db.Users
+                .Include(u => u.UserSubscriptions.Where(s => s.PaymentStatus == "ACTIVE"))
+                .ThenInclude(s => s.Plan)
+                .ToListAsync();
+        }
     }
 }

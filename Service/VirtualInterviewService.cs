@@ -19,15 +19,17 @@ namespace Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICVService _cVService;
+        private readonly IUserSubscriptionService _subscriptionService;
         private readonly IAIClient _aiClient;
         private readonly IMapper _mapper;
 
-        public VirtualInterviewService(IUnitOfWork unitOfWork, IMapper mapper, ICVService cVService, IAIClient aiClient)
+        public VirtualInterviewService(IUnitOfWork unitOfWork, IMapper mapper, ICVService cVService, IAIClient aiClient, IUserSubscriptionService subscriptionService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cVService = cVService;
             _aiClient = aiClient;
+            _subscriptionService = subscriptionService;
         }
         public async Task<StartInterviewResponse> StartInterviewAsync(StartInterviewRequest request)
         {
@@ -112,6 +114,13 @@ namespace Service
                 interview.OverallScore = (decimal?)aiResponse.Data.Feedback.Score; // Or average score of all answers
                 await _unitOfWork.VirtualInterviewRepository.UpdateAsync(interview);
                 await _unitOfWork.SaveChanges();
+                var subscription = await _subscriptionService.GetUserActiveSubscriptionAsync(interview.UserId);
+                if (subscription == null)
+                    throw new Exception("subscription not found");
+                if (subscription.InterviewPerDayRemaining <= 0)
+                    throw new Exception("Your daily Cv analysis has depleted");
+                subscription.InterviewPerDayRemaining -= 1;
+                await _subscriptionService.UpdateSubscriptionAsync(subscription.SubscriptionId, subscription);
             }
             else
             {

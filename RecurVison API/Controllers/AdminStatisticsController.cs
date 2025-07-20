@@ -174,6 +174,18 @@ namespace RecurVison_API.Controllers
             var result = await _statisticsService.GetCvAnalysesAsync(from, to, range);
             return Ok(result);
         }
+        [HttpGet("premium-conversion-rate")]
+        public async Task<IActionResult> GetPremiumConversionRate()
+        {
+            var result = await _statisticsService.GetPremiumConversionRateAsync();
+            return Ok(result);
+        }
+        [HttpGet("interviews/user-score-histogram")]
+        public async Task<IActionResult> GetScoreHistogram()
+        {
+            var result = await _statisticsService.GetUserScoreHistogramAsync();
+            return Ok(result);
+        }
         private (DateTime from, DateTime to) GetDateRange(string range)
         {
             var to = DateTime.UtcNow.Date;
@@ -194,5 +206,6 @@ namespace RecurVison_API.Controllers
 
             return (from, to);
         }
+        
     }
 }
