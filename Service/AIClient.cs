@@ -66,12 +66,17 @@ namespace Service
         }
         public async Task<AiSessionResponse?> StartSessionAsync(AiSessionRequest request)
         {
-            var url = "https://recruvision-h8freyfdh3bsb9fs.southeastasia-01.azurewebsites.net/api/v1/question-composer/start-session";
+            var url = "https://recruvision-h8freyfdh3bsb9fs.southeastasia-01.azurewebsites.net/api/v1/question-composer/start-session-url";
 
             try
             {
-                var json = JsonConvert.SerializeObject(request);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var keyValues = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string, string>("cv_file_url", request.CvFileUrl),
+            new KeyValuePair<string, string>("job_description", request.JobDescription ?? "")
+        };
+
+                var content = new FormUrlEncodedContent(keyValues);
 
                 var httpRequest = new HttpRequestMessage(HttpMethod.Post, url)
                 {
@@ -84,7 +89,8 @@ namespace Service
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("AI returned error: {StatusCode} - {Content}", response.StatusCode, await response.Content.ReadAsStringAsync());
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("AI returned error: {StatusCode} - {Content}", response.StatusCode, errorContent);
                     return null;
                 }
 
@@ -97,7 +103,7 @@ namespace Service
                 return null;
             }
         }
-        public async Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(AiAnswerEvaluateRequest request)
+        public async Task<AiAnswerEvaluateResponse> EvaluateAnswerAsync(SubmitAnswerRequest request)
         {
             try
             {

@@ -484,11 +484,11 @@ namespace Service
                 };
             }
         }
-        public async Task<CvDetailResponse> GetCvByIdAsync(int userId, int cvId)
+        public async Task<CvDetailResponse> GetCvByIdAsync(int cvId)
         {
             try
             {
-                var cv = await _unitOfWork.CVRepository.GetByUserIdAsync(userId, cvId);
+                var cv = await _unitOfWork.CVRepository.GetByIdAsync(cvId);
                 if (cv == null)
                 {
                     return new CvDetailResponse
@@ -524,7 +524,7 @@ namespace Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting CV {CvId} for user {UserId}", cvId, userId);
+                _logger.LogError(ex, "Error getting CV {CvId}", cvId);
                 return new CvDetailResponse
                 {
                     Success = false,

@@ -790,6 +790,9 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.RecordingPath)
                 .HasMaxLength(255)
                 .HasColumnName("recording_path");
+            entity.Property(e => e.SessionId)
+              .HasMaxLength(255)
+              .HasColumnName("session_id");
             entity.Property(e => e.CvContent)
                .HasMaxLength(255)
                .HasColumnName("cv_content");

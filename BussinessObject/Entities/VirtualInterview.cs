@@ -10,6 +10,7 @@ public partial class VirtualInterview
     public int UserId { get; set; }
 
     public int? JobId { get; set; }
+    public string? SessionId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 

@@ -12,6 +12,7 @@ namespace BusinessObject.DTO.AiClient
         public int QuestionId { get; set; }
         public decimal? Score { get; set; }
         public string? Feedback { get; set; }
+        public string? Summary { get; set; }
         public AiQuestion? NextQuestion { get; set; }
     }
 }

@@ -167,10 +167,10 @@ namespace RecurVison_API.Controllers
             }
         }
         [HttpPost("edit")]
-        public async Task<IActionResult> EditPdf([FromBody] EditPdfRequest request, int userId)
+        public async Task<IActionResult> EditPdf([FromBody] EditPdfRequest request)
         {
             // Get original CV from cloudinary/local storage
-            var cv = await _cvService.GetCvByIdAsync(userId,request.CvId);
+            var cv = await _cvService.GetCvByIdAsync(request.CvId);
             var fileBytes = await _storageService.GetFileAsync(cv.Cv.FilePath);
 
             if (fileBytes == null) return NotFound("Original CV not found.");
@@ -206,9 +206,9 @@ namespace RecurVison_API.Controllers
         }
 
         [HttpGet("{cvId}")]
-        public async Task<ActionResult<CvDetailResponse>> GetCvById(int cvId, [FromQuery] int userId)
+        public async Task<ActionResult<CvDetailResponse>> GetCvById(int cvId)
         {
-            var response = await _cvService.GetCvByIdAsync(userId, cvId);
+            var response = await _cvService.GetCvByIdAsync(cvId);
             return response.Success ? Ok(response) :
                    response.Message.Contains("not found") ? NotFound(response) :
                    StatusCode(500, response);

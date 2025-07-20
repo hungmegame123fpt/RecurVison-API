@@ -11,17 +11,10 @@ namespace BusinessObject.DTO.AiClient
     public class AiAnswerData
     {
         [JsonPropertyName("feedback")]
-        public AiAnswerFeedback Feedback { get; set; } = new();
+        public AiAnswerFeedback? Feedback { get; set; } = new();
 
         [JsonPropertyName("next_question")]
         public AiQuestion? NextQuestion { get; set; }
-
-        [JsonPropertyName("answer")]
-        public string? Answer { get; set; }
-
-        [JsonPropertyName("current_iteration")]
-        public int CurrentIteration { get; set; }
-
         [JsonPropertyName("completeness_score")]
         public decimal CompletenessScore { get; set; }
 

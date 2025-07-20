@@ -23,7 +23,7 @@ namespace Service.Interface
         Task<ParseCvResponse> ParseCvFromUrlAsync(string fileUrl, bool includeMetadata = true);
         Task<List<CVDto>> GetAllCvAsync();
         Task<CvListResponse> GetUserCvsAsync(int userId);
-        Task<CvDetailResponse> GetCvByIdAsync(int userId, int cvId);
+        Task<CvDetailResponse> GetCvByIdAsync(int cvId);
         Task<DeleteResponse> DeleteCvAsync(int userId, int cvId);
         Task<byte[]> EditPdfAsync(byte[] originalPdf, string newText);
         Task<string?> CategorizeCvByFieldAsync(int cvId, string plainTextContent);

@@ -165,7 +165,7 @@ namespace RecurVison_API.Controllers
             }
         }
         [HttpPost("start")]
-        public async Task<IActionResult> Start(int cvId, string jobDescription)
+        public async Task<IActionResult> Start(int cvId, [FromBody] string jobDescription)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))

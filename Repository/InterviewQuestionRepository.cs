@@ -71,7 +71,14 @@ namespace Repository
                 .OrderBy(q => q.QuestionId)
                 .ToListAsync();
         }
-
+        public async Task<List<InterviewQuestion>> GetQuestionsBySessionIdAsync(string sessionId)
+        {
+            var interview =  _db.VirtualInterviews.Where(i => i.SessionId.Equals(sessionId)).FirstOrDefault();
+            return await dbSet
+                .Where(q => q.InterviewId == interview.InterviewId)
+                .OrderBy(q => q.QuestionId)
+                .ToListAsync();
+        }
         public async Task<InterviewQuestion?> GetQuestionWithAnswerAsync(int questionId)
         {
             return await dbSet

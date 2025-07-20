@@ -4,6 +4,7 @@ using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.InterviewQuestion;
 using BusinessObject.DTO.VirtualInterview;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml.Office.SpreadSheetML.Y2023.MsForms;
 using Repository.Interface;
 using Service.Interface;
 using System;
@@ -30,41 +31,33 @@ namespace Service
         }
         public async Task<StartInterviewResponse> StartInterviewAsync(StartInterviewRequest request)
         {
-            // 1. Tạo bản ghi Interview trước để có InterviewId (dùng làm session_id)
+            // 2. Gọi ParseCv API để lấy plain text
+            var parsedCv = await _cVService.ParseCvAsync(request.CvId);
+            if (parsedCv == null || string.IsNullOrWhiteSpace(parsedCv.PlainTextContent))
+                throw new Exception("CV text not found or empty.");
+            var cv = await _cVService.GetCvByIdAsync(request.CvId);
+            // 3. Gọi AI với cv_text + job_description + session_id (interviewId)
+            var aiRequest = new AiSessionRequest
+            {
+                CvFileUrl = cv.Cv.FilePath,
+                JobDescription = request.JobDescription,
+            };
+
+            var aiResponse = await _aiClient.StartSessionAsync(aiRequest);
+            if (aiResponse?.Data?.Questions == null)
+                throw new Exception("AI did not return any questions.");
             var interview = new VirtualInterview
             {
                 UserId = request.UserId,
                 CreatedAt = DateTime.UtcNow,
                 Status = "in_progress",
                 JobDescription = request.JobDescription,
+                SessionId = aiResponse.Data.SessionId,
+                CvContent = parsedCv.PlainTextContent
             };
 
             await _unitOfWork.VirtualInterviewRepository.CreateAsync(interview);
             await _unitOfWork.SaveChanges();
-
-            var sessionId = interview.InterviewId.ToString();
-
-            // 2. Gọi ParseCv API để lấy plain text
-            var parsedCv = await _cVService.ParseCvAsync(request.CvId);
-            if (parsedCv == null || string.IsNullOrWhiteSpace(parsedCv.PlainTextContent))
-                throw new Exception("CV text not found or empty.");
-            interview.CvContent = parsedCv.PlainTextContent;
-            await _unitOfWork.VirtualInterviewRepository.UpdateAsync(interview);
-            await _unitOfWork.SaveChanges();
-            // 3. Gọi AI với cv_text + job_description + session_id (interviewId)
-            var aiRequest = new AiSessionRequest
-            {
-                CleanedCvText = parsedCv.PlainTextContent,
-                JobDescription = request.JobDescription,
-                PreviousQuestions = new List<string>(), // bắt đầu mới
-                SessionId = sessionId
-            };
-
-            var aiResponse = await _aiClient.StartSessionAsync(aiRequest);
-
-            if (aiResponse?.Data?.Questions == null)
-                throw new Exception("AI did not return any questions.");
-
             // 4. Lưu các câu hỏi AI trả về
             foreach (var q in aiResponse.Data.Questions)
             {
@@ -83,55 +76,62 @@ namespace Service
             return new StartInterviewResponse
             {
                 InterviewId = interview.InterviewId,
-                Questions = _mapper.Map<List<InterviewQuestionDto>>(aiResponse.Data.Questions),
-                Analysis = aiResponse.Data.Analysis,
-                NextFocusAreas = aiResponse.Data.NextFocusAreas,
-                CleanCvText = parsedCv.PlainTextContent, 
-                JobDescription = request.JobDescription,
+                SessionId = interview.SessionId,
+                Questions = _mapper.Map<List<InterviewQuestionDto>>(aiResponse.Data.Questions)
             };
         }
         public async Task<SubmitAnswerResponse> SubmitAnswerAsync(SubmitAnswerRequest request)
         {
-            var question = await _unitOfWork.InterviewQuestionRepository.GetByIdAsync(request.QuestionId);
-            if (question == null || question.InterviewId != request.InterviewId)
+            var questions = await _unitOfWork.InterviewQuestionRepository.GetQuestionsBySessionIdAsync(request.SessionId);
+            var currentQuestion = questions.OrderByDescending(q => q.QuestionId).FirstOrDefault();
+            if (currentQuestion == null)
                 throw new Exception("Invalid question or interview.");
 
             // Save user answer
-            question.AnswerText = request.AnswerText;
+            currentQuestion.AnswerText = request.AnswerText;
 
             // Load data from interview
-            var interview = await _unitOfWork.VirtualInterviewRepository.GetByIdAsync(request.InterviewId);
-            if (interview == null)
-                throw new Exception("Interview not found.");
-
-           
-
-            var aiRequest = new AiAnswerEvaluateRequest
-            {
-                SessionId = request.InterviewId.ToString(),
-                AnswerText = request.AnswerText,
-                CleanedCvText =interview.CvContent,
-                JobDescription = interview.JobDescription,
-                //PreviousQuestions = new List<string> { question.QuestionText ?? "" }
-            };
-            aiRequest.PreviousQuestions ??= new List<string>();
-            var aiResponse = await _aiClient.EvaluateAnswerAsync(aiRequest);
+            var aiResponse = await _aiClient.EvaluateAnswerAsync(request);
             if (aiResponse?.Data?.Feedback == null)
                 throw new Exception("AI feedback response invalid.");
 
             // Save AI feedback
-            question.Feedback = aiResponse.Data.Feedback.Feedback;
-            question.QuestionScore = (decimal?)aiResponse.Data.Feedback.Score;
-
-            await _unitOfWork.InterviewQuestionRepository.UpdateAsync(question);
+            currentQuestion.Feedback = aiResponse.Data.Feedback.Feedback;
+            currentQuestion.QuestionScore = (decimal?)aiResponse.Data.Feedback.Score;
+            await _unitOfWork.InterviewQuestionRepository.UpdateAsync(currentQuestion);
             await _unitOfWork.SaveChanges();
-
+            var interview = await _unitOfWork.VirtualInterviewRepository.GetByIdAsync(currentQuestion.InterviewId);
+            if (interview == null)
+                throw new Exception("Interview not found.");           
+            // Count number of answered questions (i.e., iterations)
+            var answeredCount = questions.Count(q => !string.IsNullOrWhiteSpace(q.AnswerText));
+            // When iteration hits 5, finalize interview
+            if (answeredCount >= 4)
+            {
+                interview.Status = "completed";
+                interview.OverallScore = (decimal?)aiResponse.Data.Feedback.Score; // Or average score of all answers
+                await _unitOfWork.VirtualInterviewRepository.UpdateAsync(interview);
+                await _unitOfWork.SaveChanges();
+            }
+            else
+            {
+                var question = new InterviewQuestion
+                {
+                    InterviewId = interview.InterviewId,
+                    QuestionText = aiResponse.Data.NextQuestion.Question,
+                    Feedback = null,
+                    QuestionScore = null
+                };
+                await _unitOfWork.InterviewQuestionRepository.CreateAsync(question);
+                await _unitOfWork.SaveChanges();
+            }
             return new SubmitAnswerResponse
             {
-                QuestionId = question.QuestionId,
-                InterviewId = question.InterviewId,
-                Score = question.QuestionScore,
-                Feedback = question.Feedback,
+                QuestionId = currentQuestion.QuestionId,
+                InterviewId = currentQuestion.InterviewId,
+                Score = currentQuestion.QuestionScore,
+                Feedback = currentQuestion.Feedback,
+                Summary = aiResponse.Data.Feedback.Summary,
                 NextQuestion = aiResponse.Data.NextQuestion
             };
         }
