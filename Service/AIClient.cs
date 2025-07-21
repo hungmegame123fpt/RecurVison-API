@@ -15,6 +15,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -197,13 +198,69 @@ namespace Service
 
             var json = await response.Content.ReadAsStringAsync();
             var aiResponse = JsonSerializer.Deserialize<AiJobMatchingResponse>(json, _jsonOptions);
+            var user = await _unitOfWork.UserRepository.GetByCvIdAsync(cvId);
+            var userPlan = await _unitOfWork.CareerPlanRepository.GetCareerPlanByUserIdAsync(user.UserId);
+            var career = aiResponse?.Data.CareerPathAnalysis;
+            if (career != null && userPlan == null)
+            {
+                var plan = new CareerPlan
+                {
+                    UserId = user.UserId,
+                    CareerGoal = career.CareerPath,
+                    CreatedAt = DateTime.Now,
+                    LastUpdated = DateTime.Now,
+                    TimelineYears = ExtractYears(career.EstimatedTimeline),
+                    CareerMilestones = new List<CareerMilestone>()
+                };
+
+                // Short-term goals (1–2 years)
+                foreach (var goal in career.ShortTermGoals)
+                {
+                    plan.CareerMilestones.Add(new CareerMilestone
+                    {
+                        Title = goal,
+                        TargetYear = 1,
+                        RequiredSkills = string.Join(", ", career.PrioritySkills),
+                        AchievementStatus = "pending"
+                    });
+                }
+
+                // Long-term goals (3+ years)
+                foreach (var goal in career.LongTermGoals)
+                {
+                    plan.CareerMilestones.Add(new CareerMilestone
+                    {
+                        Title = goal,
+                        TargetYear = 3,
+                        RequiredSkills = string.Join(", ", career.PrioritySkills),
+                        AchievementStatus = "pending"
+                    });
+                }
+
+                await _unitOfWork.CareerPlanRepository.CreateAsync(plan);
+                await _unitOfWork.SaveChanges();
+            }
+
             return new AiJobMatchingData
             {
                 SuggestedJobs = aiResponse?.Data.SuggestedJobs ?? new(),
                 SuggestedCourses = aiResponse?.Data.SuggestedCourses ?? new()
             };
         }
+        private int? ExtractYears(string? timeline)
+        {
+            if (string.IsNullOrEmpty(timeline)) return null;
+            var match = Regex.Match(timeline, @"(\d+)-(\d+)");
+            if (match.Success)
+            {
+                var min = int.Parse(match.Groups[1].Value);
+                var max = int.Parse(match.Groups[2].Value);
+                return (min + max) / 2;
+            }
+            return null;
+        }
     }
+
         public class AiCvAnalysisResponse
 	{
 		[JsonPropertyName("data")]
@@ -220,6 +277,9 @@ namespace Service
 	}
     public class AiJobMatchingData
     {
+        [JsonPropertyName("career_path_analysis")]
+        public AiCareerPathAnalysis CareerPathAnalysis { get; set; }
+
         [JsonPropertyName("suggested_jobs")]
         public List<SuggestedJob> SuggestedJobs { get; set; } = new();
         [JsonPropertyName("suggested_courses")]
@@ -247,6 +307,23 @@ namespace Service
 
         [JsonPropertyName("url")]
         public string Url { get; set; } = string.Empty;
+    }
+    public class AiCareerPathAnalysis
+    {
+        [JsonPropertyName("career_path")]
+        public string? CareerPath { get; set; }
+
+        [JsonPropertyName("short_term_goals")]
+        public List<string> ShortTermGoals { get; set; } = new();
+
+        [JsonPropertyName("long_term_goals")]
+        public List<string> LongTermGoals { get; set; } = new();
+
+        [JsonPropertyName("priority_skills")]
+        public List<string> PrioritySkills { get; set; } = new();
+
+        [JsonPropertyName("estimated_timeline")]
+        public string? EstimatedTimeline { get; set; }
     }
 
 }

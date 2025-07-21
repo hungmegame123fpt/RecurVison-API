@@ -142,6 +142,7 @@ namespace RecurVison_API
             builder.Services.AddScoped<ICvAnalysisResultService, CvAnalysisService>();
             builder.Services.AddScoped<IAIClient, AIClient>();
             builder.Services.AddScoped<IAdminStatisticsService, AdminStatisticsService>();
+            builder.Services.AddScoped<ICareerPlanService, CareerPlanService>();
             builder.Services.AddHttpClient<IAIClient, AIClient>();
             builder.Services.AddHostedService<SubscriptionExpiryService>();
             builder.Services.AddHttpContextAccessor();

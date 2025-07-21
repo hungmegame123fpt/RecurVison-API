@@ -90,7 +90,7 @@ public partial class RecurVisionV1Context : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.CareerMilestones)
                 .HasForeignKey(d => d.PlanId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__CAREER_MI__plan___14270015");
         });
 
@@ -117,7 +117,7 @@ public partial class RecurVisionV1Context : DbContext
                 .HasColumnName("last_updated");
             entity.Property(e => e.TimelineYears).HasColumnName("timeline_years");
             entity.Property(e => e.UserId).HasColumnName("user_id");
-
+            entity.Property(e => e.TargetFieldId).HasColumnName("target_field_id");
             entity.HasOne(d => d.User).WithMany(p => p.CareerPlans)
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -715,6 +715,8 @@ public partial class RecurVisionV1Context : DbContext
         {
             entity.ToTable("FIELD_CATEGORY");
             entity.HasKey(e => e.CategoryId);
+            entity.Property(e => e.CategoryId).ValueGeneratedOnAdd()
+               .HasColumnName("category_id"); 
             entity.Property(e => e.CategoryName).IsRequired().HasMaxLength(255);
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.IconPath).HasMaxLength(255);

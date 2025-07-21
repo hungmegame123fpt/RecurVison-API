@@ -47,7 +47,14 @@ namespace Repository
         {
             return await _db.Users.FirstOrDefaultAsync(u => u.Email == email && u.AccountStatus == "Active");
         }
+        public async Task<User?> GetByCvIdAsync(int cvId)
+        {
+            var cv = await _db.Cvs.FirstOrDefaultAsync(c => c.CvId == cvId);
+            if (cv == null || string.IsNullOrWhiteSpace(cv.UserId.ToString()))
+                return null;
 
+            return await _db.Users.FirstOrDefaultAsync(u => u.UserId == cv.UserId && u.AccountStatus == "Active");
+        }
         public async Task<User?> GetByGoogleIdAsync(string googleId)
         {
             return await _db.Users.FirstOrDefaultAsync(u => u.GoogleId == googleId && u.AccountStatus == "Active");

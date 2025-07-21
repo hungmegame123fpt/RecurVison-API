@@ -30,6 +30,7 @@ namespace Repository
         public ICvVersionRepository CvVersionRepository { get; set; }
         public IUserRoleRepository UserRoleRepository { get; set; }
         public ICvAnalysisResultRepository CvAnalysisResult { get; set; }
+        public ICareerPlanRepository CareerPlanRepository { get; set; }
         public IBaseRepository<CvSkill> CvSkill { get; set; }
         public IBaseRepository<CvProject> CvProject { get; set; }
         public IBaseRepository<CvProjectTechStack> CvProjectTechStack { get; set; }
@@ -52,6 +53,7 @@ namespace Repository
             VirtualInterviewRepository = new VirtualInterviewRepository(_db);
             InterviewQuestionRepository = new InterviewQuestionRepository(_db);
 			CvAnalysisResult = new CvAnalysisResultRepository(_db);
+			CareerPlanRepository = new CareerPlanRepository(_db);
             JobDescriptionRepository = new BaseRepository<JobDescription>(_db);
             CvSkill = new BaseRepository<CvSkill>(_db);
             CvCertification = new BaseRepository<CvCertification>(_db);

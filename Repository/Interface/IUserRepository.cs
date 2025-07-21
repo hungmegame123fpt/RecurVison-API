@@ -17,6 +17,7 @@ namespace Repository.Interface
         Task<List<User>> GetAllAsync(Expression<Func<User, bool>>? filter = null, string? includeProperties = null);
         Task<User?> GetByIdAsync(int? id);
         Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByCvIdAsync(int cvId);
         Task<User?> GetByGoogleIdAsync(string googleId);
         Task<User> CreateAsync(User user);
         Task<User> UpdateAsync(User user);
