@@ -12,6 +12,7 @@ namespace Service.Interface
     {
         Task<StatsComparisonDto> GetNewCvsStatsAsync();
         Task<StatsComparisonDto> GetNewInterviewsStatsAsync();
+        Task<StatsComparisonDto> GetNewCompletedInterviewsStatsAsync();
         Task<StatsComparisonDto> GetNewUsersStatsAsync();
         Task<int> GetTotalCvsAsync();
         Task<object> GetTotalCvFieldsAsync();

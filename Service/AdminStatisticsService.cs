@@ -40,6 +40,21 @@ namespace Service
             var today = DateTime.UtcNow.Date;
             var yesterday = today.AddDays(-1);
 
+            var todayCount = await _unitOfWork.VirtualInterviewRepository.CountAsync(c => c.CreatedAt.HasValue && c.CreatedAt.Value.Date == today);
+            var yesterdayCount = await _unitOfWork.VirtualInterviewRepository.CountAsync(c => c.CreatedAt.HasValue && c.CreatedAt.Value.Date == yesterday);
+
+            return new StatsComparisonDto
+            {
+                Today = todayCount,
+                Yesterday = yesterdayCount,
+                PercentageChange = CalculatePercentageChange(todayCount, yesterdayCount)
+            };
+        }
+        public async Task<StatsComparisonDto> GetNewCompletedInterviewsStatsAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var yesterday = today.AddDays(-1);
+
             var todayCount = await _unitOfWork.VirtualInterviewRepository.CountCompletedInterviewsAsync(today);
             var yesterdayCount = await _unitOfWork.VirtualInterviewRepository.CountCompletedInterviewsAsync(yesterday);
 

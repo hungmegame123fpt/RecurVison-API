@@ -37,6 +37,12 @@ namespace RecurVison_API.Controllers
             var count = await _statisticsService.GetNewInterviewsStatsAsync();
             return Ok(count);
         }
+        [HttpGet("interviews/completed-today")]
+        public async Task<IActionResult> GetCompletedInterviewsToday()
+        {
+            var count = await _statisticsService.GetNewCompletedInterviewsStatsAsync();
+            return Ok(count);
+        }
 
         [HttpGet("users/new-today")]
         public async Task<IActionResult> GetNewUsersToday()

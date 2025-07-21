@@ -94,12 +94,12 @@ namespace Repository
         public async Task<int> CountCompletedInterviewsAsync(DateTime date)
         {
             return await _db.VirtualInterviews
-                .CountAsync(i => i.Status == "completed");
+                .CountAsync(i => i.Status == "completed" && i.CreatedAt.Value.Date == date);
         }
         public async Task<List<VirtualInterview>> GetCompletedInterviewsAsync()
         {
             return await dbSet
-                .Where(i => i.Status == "Completed")
+                .Where(i => i.Status == "completed")
                 .Include(i => i.InterviewQuestions)
                 .ToListAsync();
         }
