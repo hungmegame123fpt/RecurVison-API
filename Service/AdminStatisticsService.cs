@@ -256,10 +256,10 @@ namespace Service
                 i => i.Status == "completed" && i.OverallScore != null);
 
             var bins = new List<ScoreHistogramBinDto>();
-            for (decimal i = 0; i < 10; i += 0.5m)
+            for (decimal i = 0; i < 1; i += 0.05m)
             {
                 decimal min = i;
-                decimal max = i + 0.5m;
+                decimal max = i + 0.05m;
 
                 var count = interviews.Count(iw =>
                     iw.OverallScore >= min && iw.OverallScore < max);
