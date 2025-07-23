@@ -332,6 +332,9 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(255)
                 .HasColumnName("status");
+            entity.Property(e => e.FieldId)
+               .HasMaxLength(255)
+               .HasColumnName("field_id");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             entity.HasOne(d => d.User).WithMany(p => p.JobPostings)
