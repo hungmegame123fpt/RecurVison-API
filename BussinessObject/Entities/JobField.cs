@@ -10,7 +10,7 @@ namespace BusinessObject.Entities
     {
         public int FieldId { get; set; }
         public string FieldName { get; set; } = string.Empty;
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
         public string? CommonSkills { get; set; }
         public string? TypicalKeywords { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;

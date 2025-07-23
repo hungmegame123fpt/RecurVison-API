@@ -473,6 +473,9 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.ProfilePhotoPath)
                 .HasMaxLength(255)
                 .HasColumnName("profile_photo_path");
+            entity.Property(e => e.PhoneNumber)
+               .HasMaxLength(255)
+               .HasColumnName("phone_number");
             entity.Property(e => e.RegistrationSource)
                 .HasMaxLength(255)
                 .HasColumnName("registration_source");

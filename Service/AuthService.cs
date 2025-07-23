@@ -359,16 +359,21 @@ namespace Service
 
                 var totalCvs = await _unitOfWork.CVRepository.CountAsync(u => u.UserId == userId);
                 var thisMonth = await _unitOfWork.CvAnalysisResult.GetCvsAnalyzedThisMonthAsync(userId);
-                var job = await _unitOfWork.UserRepository.GetLatestJobPostingAsync(userId);
+                var job = await _unitOfWork.UserRepository.GetLatestJobPostingAsync(userId) ?? new JobPosting();
+                var subscriptionStatus = "Free";
+                var subscription = await _unitOfWork.UserSubscriptionRepository.GetUserActiveSubscriptionAsync(userId);
+                if (subscription.PlanId != 15)
+                    subscriptionStatus = "Pro";
                 var response = new UserProfileResponse
                 {
                     FullName = $"{user.FirstName} {user.LastName}",
                     Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
                     Location = job.Location,
                     Company = job.CompanyName,
-                    Position = job.JobPosition,
+                    Position = job.JobPosition, 
                     MemberSince = user.CreatedAt?.ToString("MMMM yyyy") ?? "N/A",
-                    PlanStatus = user.SubscriptionStatus ?? "Free",
+                    PlanStatus = subscriptionStatus,
                     AccountStatus = user.EmailVerified == true ? "Verified" : "Unverified",
                     CvsAnalyzed = totalCvs,
                     CvsThisMonth = thisMonth
@@ -396,6 +401,7 @@ namespace Service
 
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
+            user.PhoneNumber = request.PhoneNumber;
             var latestJob = await _unitOfWork.UserRepository.GetLatestJobPostingAsync(userId);
             if (latestJob == null)
             {

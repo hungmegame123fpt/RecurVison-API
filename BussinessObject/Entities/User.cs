@@ -21,6 +21,7 @@ public partial class User
     public DateTime? LastLogin { get; set; }
 
     public string? AccountStatus { get; set; }
+    public string? PhoneNumber { get; set; }
 
     public string? GoogleId { get; set; }
     public bool? EmailVerified { get; set; } = false;

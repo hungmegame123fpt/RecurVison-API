@@ -170,7 +170,6 @@ namespace RecurVison_API.Controllers
         }
 
         [HttpGet("profile")]
-        [Authorize]
         public async Task<IActionResult> GetProfile()
         {
             var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
