@@ -16,7 +16,7 @@ namespace RecurVison_API.Controllers
         {
             _careerPlanService = careerPlanService;
         }
-        [HttpGet("user/{userId}/next-career-goal")]
+        [HttpGet("user/next-career-goal")]
         public async Task<IActionResult> GetNextCareerGoal()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
