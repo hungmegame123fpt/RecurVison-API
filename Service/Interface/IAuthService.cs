@@ -16,6 +16,7 @@ namespace Service.Interface
         Task<APIResponse<bool>> VerifyOtpAsync(VerifyOtpDto verifyOtpDto);
         Task<APIResponse<string>> GenerateOtpAsync(string email);
         Task<APIResponse<bool>> ChangePasswordAsync(int userId, ChangePasswordDTO changePasswordDto);
-        Task<APIResponse<User?>> GetUserAsync(int userId);
+        Task<APIResponse<UserProfileResponse?>> GetUserAsync(int userId);
+        Task UpdateUserProfileAsync(int userId, UpdateProfileRequest request);
     }
 }

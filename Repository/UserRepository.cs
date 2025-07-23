@@ -42,7 +42,13 @@ namespace Repository
 
             return await query.ToListAsync();
         }
-
+        public async Task<JobPosting?> GetLatestJobPostingAsync(int userId)
+        {
+            return await _db.JobPostings
+                .Where(j => j.UserId == userId)
+                .OrderByDescending(j => j.DateSaved)
+                .FirstOrDefaultAsync();
+        }
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _db.Users.FirstOrDefaultAsync(u => u.Email == email && u.AccountStatus == "Active");

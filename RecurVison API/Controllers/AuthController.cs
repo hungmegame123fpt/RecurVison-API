@@ -177,5 +177,12 @@ namespace RecurVison_API.Controllers
             var result = await _authService.GetUserAsync(userId);
             return Ok(result);
         }
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request)
+        {
+            var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _authService.UpdateUserProfileAsync(userId, request);
+            return NoContent();
+        }
     }
 }

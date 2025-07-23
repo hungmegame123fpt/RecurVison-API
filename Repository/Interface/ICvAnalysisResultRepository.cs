@@ -11,5 +11,6 @@ namespace Repository.Interface
 	{
         Task<CvAnalysisResult?> GetLatestAnalysisForCvAsync(int cvId);
         IQueryable<CvAnalysisResult> GetQueryable();
+        Task<int> GetCvsAnalyzedThisMonthAsync(int userId);
     }
 }

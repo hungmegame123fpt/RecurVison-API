@@ -350,20 +350,38 @@ namespace Service
             }
         }
 
-        public async Task<APIResponse<User?>> GetUserAsync(int userId)
+        public async Task<APIResponse<UserProfileResponse?>> GetUserAsync(int userId)
         {
             try
             {
                 var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
-                return new APIResponse<User?>
+                if (user == null) return null;
+
+                var totalCvs = await _unitOfWork.CVRepository.CountAsync(u => u.UserId == userId);
+                var thisMonth = await _unitOfWork.CvAnalysisResult.GetCvsAnalyzedThisMonthAsync(userId);
+                var job = await _unitOfWork.UserRepository.GetLatestJobPostingAsync(userId);
+                var response = new UserProfileResponse
+                {
+                    FullName = $"{user.FirstName} {user.LastName}",
+                    Email = user.Email,
+                    Location = job.Location,
+                    Company = job.CompanyName,
+                    Position = job.JobPosition,
+                    MemberSince = user.CreatedAt?.ToString("MMMM yyyy") ?? "N/A",
+                    PlanStatus = user.SubscriptionStatus ?? "Free",
+                    AccountStatus = user.EmailVerified == true ? "Verified" : "Unverified",
+                    CvsAnalyzed = totalCvs,
+                    CvsThisMonth = thisMonth
+                };
+                return new APIResponse<UserProfileResponse?>
                 {
                     Success = true,
-                    Data = user
+                    Data = response
                 };
             }
             catch (Exception ex)
             {
-                return new APIResponse<User?>
+                return new APIResponse<UserProfileResponse?>
                 {
                     Success = false,
                     Message = "Failed to get user",
@@ -371,7 +389,32 @@ namespace Service
                 };
             }
         }
+        public async Task UpdateUserProfileAsync(int userId, UpdateProfileRequest request)
+        {
+            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            if (user == null) throw new Exception("User not found");
 
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+            var latestJob = await _unitOfWork.UserRepository.GetLatestJobPostingAsync(userId);
+            if (latestJob == null)
+            {
+                latestJob = new JobPosting
+                {
+                    UserId = userId,
+                    DateSaved = DateTime.UtcNow,
+                };
+                await _unitOfWork.JobPostingRepository.CreateAsync(latestJob);
+            }
+
+            latestJob.Location = request.Location;
+            latestJob.CompanyName = request.Company;
+            latestJob.JobPosition = request.Position;
+
+            await _unitOfWork.UserRepository.UpdateAsync(user);
+            await _unitOfWork.JobPostingRepository.UpdateAsync(latestJob);
+            await _unitOfWork.SaveChanges();
+        }
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())

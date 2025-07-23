@@ -23,6 +23,7 @@ namespace Repository.Interface
         ICvVersionRepository CvVersionRepository { get;  }
 		ICvAnalysisResultRepository CvAnalysisResult { get;  }
 		ICareerPlanRepository CareerPlanRepository { get;  }
+		IJobPostingRepository JobPostingRepository { get;  }
         IBaseRepository<JobDescription> JobDescriptionRepository { get; }
         IBaseRepository<CvSkill> CvSkill { get; }
         IBaseRepository<CvCertification> CvCertification { get; }
