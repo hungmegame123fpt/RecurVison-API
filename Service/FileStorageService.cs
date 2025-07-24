@@ -62,6 +62,19 @@ namespace Service
                     };
                     uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
                 }
+                else if (fileExtension == ".jpg" || fileExtension == ".jpeg" || fileExtension == ".png" || file.ContentType.StartsWith("image"))
+                {
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(fileName, stream),
+                        PublicId = publicId,
+                        Folder = _folder,
+                        UseFilename = false,
+                        UniqueFilename = true,
+                        AccessMode = "public"
+                    };
+                    uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
+                }
                 else
                 {
                     var uploadParams = new RawUploadParams()
@@ -109,6 +122,41 @@ namespace Service
                     UseFilename = true,
                     UniqueFilename = false,
                     Type = "upload",
+                    AccessMode = "public"
+                };
+
+                var uploadResult = await _cloudinaryService.UploadAsync(uploadParams);
+                if (uploadResult.Error != null)
+                {
+                    _logger.LogError("Cloudinary upload error: {Error}", uploadResult.Error.Message);
+                    throw new Exception($"Upload to Cloudinary failed: {uploadResult.Error.Message}");
+                }
+
+                return uploadResult.SecureUrl.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading JSON file: {FileName}", originalFileName);
+                throw;
+            }
+        }
+        public async Task<string> SaveImageFileWithOriginalNameAsync(IFormFile file, string originalFileName)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    throw new ArgumentException("File is empty or null");
+
+                var publicId = Path.GetFileNameWithoutExtension(originalFileName);
+                using var stream = file.OpenReadStream();
+
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(originalFileName, stream),
+                    PublicId = publicId,
+                    Folder = "image/thumb-nail",
+                    UseFilename = false,
+                    UniqueFilename = true,
                     AccessMode = "public"
                 };
 

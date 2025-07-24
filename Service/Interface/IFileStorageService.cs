@@ -14,5 +14,6 @@ namespace Service.Interface
         Task<byte[]?> GetFileAsync(string filePath);
         Task<bool> DeleteFileAsync(string filePath);
         Task<string> SaveJsonFileWithOriginalNameAsync(IFormFile file, string originalFileName);
+        Task<string> SaveImageFileWithOriginalNameAsync(IFormFile file, string originalFileName);
     }
 }

@@ -59,6 +59,9 @@ public partial class RecurVisionV1Context : DbContext
     public DbSet<CvProject> CvProjects { get; set; }
     public DbSet<CvProjectTechStack> CvProjectTechStacks { get; set; }
     public DbSet<CvCertification> CvCertifications { get; set; }
+    public DbSet<BlogPost> BlogPosts { get; set; }
+    public DbSet<BlogCategory> BlogCategories { get; set; }
+    public DbSet<Author> Authors { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=tcp:recrudb.database.windows.net,1433;Initial Catalog=RecurVision_V1-2025-7-13-0-38;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
@@ -838,6 +841,59 @@ public partial class RecurVisionV1Context : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             
         });
+        modelBuilder.Entity<BlogPost>(entity =>
+        {
+            entity.ToTable("BlogPost");
+            entity.HasKey(e => e.BlogPostId);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Summary).HasMaxLength(500);
+            entity.Property(e => e.Content).IsRequired();
+            entity.Property(e => e.PublishedDate).IsRequired();
+            entity.Property(e => e.ThumbnailImageUrl).HasMaxLength(500);
+
+            entity.HasOne(e => e.Author)
+                  .WithMany(u => u.BlogPosts)
+                  .HasForeignKey(e => e.AuthorId);
+        });
+
+        modelBuilder.Entity<BlogCategory>(entity =>
+        {
+            entity.ToTable("BlogCategory");
+            entity.HasKey(e => e.BlogCategoryId);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        });
+        modelBuilder.Entity<Author>(entity =>
+        {
+            entity.ToTable("Author");
+            entity.HasKey(e => e.AuthorId);
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.Position).HasMaxLength(100);
+            entity.Property(e => e.ProfileImageUrl).HasMaxLength(100);
+            entity.HasMany(e => e.BlogPosts)
+                  .WithOne(p => p.Author)
+                  .HasForeignKey(p => p.AuthorId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<BlogPost>()
+        .HasMany(bp => bp.Categories)
+        .WithMany(c => c.BlogPosts)
+        .UsingEntity<Dictionary<string, object>>(
+            "BlogPostCategory",
+            j => j
+                .HasOne<BlogCategory>()
+                .WithMany()
+                .HasForeignKey("BlogCategoryId")
+                .OnDelete(DeleteBehavior.Cascade),
+            j => j
+                .HasOne<BlogPost>()
+                .WithMany()
+                .HasForeignKey("BlogPostId")
+                .OnDelete(DeleteBehavior.Cascade),
+            j =>
+            {
+                j.HasKey("BlogPostId", "BlogCategoryId");
+                j.ToTable("BlogPostCategory");
+            });
         OnModelCreatingPartial(modelBuilder);
     }
 

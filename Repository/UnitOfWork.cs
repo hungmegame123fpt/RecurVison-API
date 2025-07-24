@@ -32,12 +32,15 @@ namespace Repository
         public ICvAnalysisResultRepository CvAnalysisResult { get; set; }
         public ICareerPlanRepository CareerPlanRepository { get; set; }
         public IJobPostingRepository JobPostingRepository { get; set; }
+        public IBlogPostRepository BlogPostRepository { get; set; }
+        public IBlogCategoryRepository BlogCategoryRepository { get; set; }
         public IBaseRepository<CvSkill> CvSkill { get; set; }
         public IBaseRepository<CvProject> CvProject { get; set; }
         public IBaseRepository<CvProjectTechStack> CvProjectTechStack { get; set; }
         public IBaseRepository<CvCertification> CvCertification { get; set; }
         public IBaseRepository<CvEducation> CvEducation { get; set; }
         public IBaseRepository<JobDescription> JobDescriptionRepository { get; set; }
+        public IBaseRepository<Author> AuthorRepository { get; set; }
         public UnitOfWork(RecurVisionV1Context db, IConfiguration configuration)
         {
             _db = db;
@@ -56,12 +59,15 @@ namespace Repository
 			CvAnalysisResult = new CvAnalysisResultRepository(_db);
 			CareerPlanRepository = new CareerPlanRepository(_db);
 			JobPostingRepository = new JobPostingRepository(_db);
+			BlogPostRepository = new BlogPostRepository(_db);
+			BlogCategoryRepository = new BlogCategoryRepository(_db);
             JobDescriptionRepository = new BaseRepository<JobDescription>(_db);
             CvSkill = new BaseRepository<CvSkill>(_db);
             CvCertification = new BaseRepository<CvCertification>(_db);
             CvProject = new BaseRepository<CvProject>(_db);
             CvEducation = new BaseRepository<CvEducation>(_db);
             CvProjectTechStack = new BaseRepository<CvProjectTechStack>(_db);
+            AuthorRepository = new BaseRepository<Author>(_db);
         }
         public async Task SaveChanges()
         {

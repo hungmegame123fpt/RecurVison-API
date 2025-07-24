@@ -35,7 +35,7 @@ namespace RecurVison_API.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
                 return Unauthorized("User ID not found in claims.");
             var success = await _careerPlanService.UpdateCareerPlanAsync(userId,request);
-            return success ? Ok() : BadRequest("Update failed.");
+            return success ? Ok(new { message = "Career plan updated successfully." }) : BadRequest("Update failed.");
         }
         [HttpDelete("career-plan/{planId}")]
         public async Task<IActionResult> DeleteCareerPlan(int planId)

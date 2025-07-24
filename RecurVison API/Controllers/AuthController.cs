@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Service;
 using Service.Interface;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace RecurVison_API.Controllers
@@ -179,9 +180,21 @@ namespace RecurVison_API.Controllers
         [HttpPut("profile")]
         public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request)
         {
-            var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            await _authService.UpdateUserProfileAsync(userId, request);
-            return NoContent();
+            try
+            {
+                var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+               _authService.UpdateUserProfileAsync(userId, request);
+                return Ok(new { Success = true, Message = "Update profile successfully" });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error");
+            }
+            
         }
     }
 }
