@@ -366,7 +366,8 @@ namespace Service
                     subscriptionStatus = "Pro";
                 var response = new UserProfileResponse
                 {
-                    FullName = $"{user.FirstName} {user.LastName}",
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
                     Location = job.Location,
