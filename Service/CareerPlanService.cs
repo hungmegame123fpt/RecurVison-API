@@ -27,7 +27,7 @@ namespace Service
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
                 .FirstOrDefaultAsync();
-
+            var job = await _unitOfWork.JobPostingRepository.GetByUserIdAsync(userId);
             if (plan == null) return null;
             var baseDate = plan.LastUpdated ?? plan.CreatedAt;
             var milestone = plan.CareerMilestones
@@ -48,7 +48,8 @@ namespace Service
                 TargetTitle = milestone?.Title ?? "Land a new job with desired offer",
                 TargetDate = targetDate,
                 OverallPath = plan?.CareerGoal,
-                CurrentPosition = plan.CurrentPosition
+                CurrentPosition = job.JobPosition,
+                Status = milestone.AchievementStatus
             };
         }
         public async Task<bool> UpdateCareerPlanAsync(int userId, UpdateCareerPlanRequest request)
@@ -59,12 +60,12 @@ namespace Service
                  .Where(p => p.UserId == userId)
                  .OrderByDescending(p => p.CreatedAt)
                  .FirstOrDefaultAsync();
-
+            var job = await _unitOfWork.JobPostingRepository.GetByUserIdAsync(userId);
             if (plan == null)
                 throw new Exception("Career plan not found.");
 
-            plan.CurrentPosition = request.CurrentPosition;
-            plan.LastUpdated = request.LastUpdated ?? DateTime.UtcNow;
+            plan.CurrentPosition = job.JobPosition;
+            plan.LastUpdated = DateTime.UtcNow;
 
             foreach (var mUpdate in request.Milestones)
             {

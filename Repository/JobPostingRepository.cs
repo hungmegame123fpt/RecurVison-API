@@ -1,5 +1,6 @@
 ﻿using BusinessObject;
 using BusinessObject.Entities;
+using Microsoft.EntityFrameworkCore;
 using Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,14 @@ namespace Repository
     {
         public JobPostingRepository(RecurVisionV1Context db) : base(db)
         {
+
+        }
+        public async Task<JobPosting> GetByUserIdAsync(int userId)
+        {
+            return await _db.JobPostings
+                .Where(j => j.UserId == userId)
+                .Include(j => j.JobField) 
+                .FirstOrDefaultAsync();
         }
     }
 }

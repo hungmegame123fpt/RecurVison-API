@@ -183,7 +183,7 @@ namespace RecurVison_API.Controllers
             try
             {
                 var userId = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-               _authService.UpdateUserProfileAsync(userId, request);
+                await _authService.UpdateUserProfileAsync(userId, request);
                 return Ok(new { Success = true, Message = "Update profile successfully" });
             }
             catch (ValidationException ex)

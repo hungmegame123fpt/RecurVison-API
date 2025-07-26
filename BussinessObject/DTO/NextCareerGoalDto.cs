@@ -14,5 +14,6 @@ namespace BusinessObject.DTO
         public string? TargetDate { get; set; } 
         public string? OverallPath { get; set; } 
         public string? CurrentPosition { get; set; } 
+        public string? Status { get; set; } 
     }
 }

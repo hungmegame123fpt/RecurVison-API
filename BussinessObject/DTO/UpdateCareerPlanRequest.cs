@@ -8,10 +8,6 @@ namespace BusinessObject.DTO
 {
     public class UpdateCareerPlanRequest
     {
-        public string? CurrentPosition { get; set; }
-
-        public DateTime? LastUpdated { get; set; }
-
         public List<MilestoneUpdateDto> Milestones { get; set; } = new();
     }
 
