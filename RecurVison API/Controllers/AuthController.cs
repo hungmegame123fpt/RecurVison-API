@@ -85,6 +85,7 @@ namespace RecurVison_API.Controllers
                 return Ok(new
                 {
                     Result = result,
+                    Role = role,
                     Token = claims
                 });
             }
