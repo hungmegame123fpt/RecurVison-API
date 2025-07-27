@@ -21,5 +21,11 @@ namespace Repository
                 .Include(p => p.CareerMilestones)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
+        public async Task<List<CareerMilestone>> GetByPlanIdAsync(int planId)
+        {
+            return await _db.CareerMilestones
+                .Where(m => m.PlanId == planId)
+                .ToListAsync();
+        }
     }
 }

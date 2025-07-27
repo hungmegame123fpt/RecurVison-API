@@ -44,5 +44,11 @@ namespace RecurVison_API.Controllers
             if (!success) return NotFound("Career plan not found.");
             return Ok(new { message = "Career plan deleted successfully." });
         }
+        [HttpGet("by-plan/{planId}")]
+        public async Task<IActionResult> GetByPlanId(int planId)
+        {
+            var milestones = await _careerPlanService.GetByPlanIdAsync(planId);
+            return Ok(milestones);
+        }
     }
 }

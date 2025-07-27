@@ -80,6 +80,16 @@ namespace Service
             await _unitOfWork.SaveChanges();
             return true;
         }
+        public async Task<List<CareerMilestoneResponse>> GetByPlanIdAsync(int planId)
+        {
+            var milestones = await _unitOfWork.CareerPlanRepository.GetByPlanIdAsync(planId);
+
+            return milestones.Select(m => new CareerMilestoneResponse
+            {
+                Title = m.Title,
+                YearToComplete = m.TargetYear
+            }).ToList();
+        }
         public async Task<bool> DeleteCareerPlanAsync(int planId)
         {
             var plan = await _unitOfWork.CareerPlanRepository.GetByIdAsync(planId);

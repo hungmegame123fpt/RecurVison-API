@@ -12,5 +12,6 @@ namespace Service.Interface
         Task<NextCareerGoalDto?> GetNextCareerGoalAsync(int userId);
         Task<bool> UpdateCareerPlanAsync(int userId, UpdateCareerPlanRequest request);
         Task<bool> DeleteCareerPlanAsync(int planId);
+        Task<List<CareerMilestoneResponse>> GetByPlanIdAsync(int planId);
     }
 }

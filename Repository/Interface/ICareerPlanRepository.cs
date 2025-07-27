@@ -10,5 +10,6 @@ namespace Repository.Interface
     public interface ICareerPlanRepository : IBaseRepository<CareerPlan>
     {
         Task<CareerPlan?> GetCareerPlanByUserIdAsync(int userId);
+        Task<List<CareerMilestone>> GetByPlanIdAsync(int planId);
     }
 }
