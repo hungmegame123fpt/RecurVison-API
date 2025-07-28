@@ -62,6 +62,7 @@ public partial class RecurVisionV1Context : DbContext
     public DbSet<BlogPost> BlogPosts { get; set; }
     public DbSet<BlogCategory> BlogCategories { get; set; }
     public DbSet<Author> Authors { get; set; }
+    public DbSet<Feedback> Feedbacks { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=tcp:recrudb.database.windows.net,1433;Initial Catalog=RecurVision_V1-2025-7-13-0-38;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
@@ -733,7 +734,19 @@ public partial class RecurVisionV1Context : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("getdate()");
         });
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.ToTable("Feedback"); 
 
+            entity.HasKey(f => f.FeedbackId);
+
+            entity.Property(f => f.Content).HasMaxLength(1000);
+
+            entity.HasOne(f => f.User)
+                  .WithMany(u => u.Feedbacks)
+                  .HasForeignKey(f => f.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
         modelBuilder.Entity<JobField>(entity =>
         {
             entity.ToTable("JOB_FIELD");

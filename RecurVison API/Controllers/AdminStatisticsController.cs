@@ -140,7 +140,12 @@ namespace RecurVison_API.Controllers
             var revenue = await _subscriptionService.GetTotalRevenueAsync();
             return Ok(new { totalRevenue = revenue });
         }
-
+        [HttpGet("revenue")]
+        public async Task<IActionResult> GetRevenueAnalytics()
+        {
+            var data = await _statisticsService.GetAnalyticsAsync();
+            return Ok(data);
+        }
         [HttpGet("revenue/plan/{planId}")]
         public async Task<IActionResult> GetRevenueByPlan(int planId)
         {
@@ -190,6 +195,12 @@ namespace RecurVison_API.Controllers
         public async Task<IActionResult> GetScoreHistogram()
         {
             var result = await _statisticsService.GetUserScoreHistogramAsync();
+            return Ok(result);
+        }
+        [HttpGet("top-customers")]
+        public async Task<IActionResult> GetTopCustomers()
+        {
+            var result = await _statisticsService.GetTopCustomersAsync();
             return Ok(result);
         }
         private (DateTime from, DateTime to) GetDateRange(string range)

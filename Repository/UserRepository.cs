@@ -32,12 +32,9 @@ namespace Repository
                     .Include(u => u.CareerPlans)
                     .Include(u => u.Cvs)
                     .Include(u => u.JobPostings)
-                    .Include(u => u.UserCharacteristics)
                     .Include(u => u.UserRoleAssignedByNavigations)
                     .Include(u => u.UserRoleUsers)
-                    .Include(u => u.UserSubscriptions)
-                    .Include(u => u.VirtualInterviews)
-                    .Include(u => u.UserFieldPreferences);
+                    .Include(u => u.UserSubscriptions);
             }
 
             return await query.ToListAsync();

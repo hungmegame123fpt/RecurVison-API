@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Repository.Interface;
 using BusinessObject.DTO.UserSubscription;
+using BusinessObject.DTO;
 
 namespace Repository
 {
@@ -88,7 +89,14 @@ namespace Repository
                 includeProperties: "User,Plan"
             );
         }
-
+        public async Task<List<UserSubscription>> GetPaymentsInLast12MonthsAsync()
+        {
+            var fromDate = DateTime.UtcNow.AddMonths(-11).Date;
+            return await _db.UserSubscriptions
+                .Include(x => x.Plan)
+                .Where(p => p.StartDate >= fromDate && p.PaymentStatus.Equals("ACTIVE") && p.PlanId != 15)
+                .ToListAsync();
+        }
         public async Task<List<UserSubscription>> GetExpiringSubscriptionsAsync(int daysFromNow)
         {
             var targetDate = DateTime.UtcNow.AddDays(daysFromNow);
@@ -204,6 +212,28 @@ namespace Repository
                 includeProperties: "User,Plan"
             );
             return subscriptions.FirstOrDefault();
-        }    
+        }
+        public async Task<List<TopCustomerDTO>> GetTopCustomersAsync()
+        {
+            var topCustomers = await _db.UserSubscriptions
+             .Include(us => us.User)
+             .Include(us => us.Plan)
+             .Where(us => us.PaymentStatus == "ACTIVE" || us.PaymentStatus == "EXPIRED")
+             .GroupBy(us => us.UserId)
+             .Select(group => new TopCustomerDTO
+             {
+                 FullName = group.First().User.FirstName + " " + group.First().User.LastName,
+                 Email = group.First().User.Email,
+                 SubscriptionPlan = group.OrderByDescending(x => x.StartDate).First().Plan.PlanName,
+                 TotalSpent = group.Sum(s => s.Plan.Price ?? 0),
+                 LastPaymentDate = group.Max(s => s.LastPaymentDate) ?? DateTime.Now,
+             })
+         .Where(c => c.TotalSpent > 0)
+         .OrderByDescending(c => c.TotalSpent)
+         .Take(10)
+         .ToListAsync();
+
+            return topCustomers;
+        }
     }
 }

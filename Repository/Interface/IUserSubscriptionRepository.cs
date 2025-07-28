@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.UserSubscription;
+﻿using BusinessObject.DTO;
+using BusinessObject.DTO.UserSubscription;
 using BusinessObject.Entities;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,9 @@ namespace Repository.Interface
         Task<decimal> GetTotalRevenueAsync();
         Task<decimal> GetRevenueByPlanAsync(int planId);
         Task<int> GetActiveSubscriptionCountAsync();
+        Task<List<UserSubscription>> GetPaymentsInLast12MonthsAsync();
         Task<Dictionary<string, int>> GetSubscriptionStatsByStatusAsync();
         Task<UserSubscription?> GetSubscriptionWithDetailsAsync(int subscriptionId);
+        Task<List<TopCustomerDTO>> GetTopCustomersAsync();
     }
 }

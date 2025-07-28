@@ -35,6 +35,7 @@ public partial class User
     public virtual ICollection<CareerPlan> CareerPlans { get; set; } = new List<CareerPlan>();
 
     public virtual ICollection<Cv> Cvs { get; set; } = new List<Cv>();
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = null!;
 
     public virtual ICollection<JobPosting> JobPostings { get; set; } = new List<JobPosting>();
 

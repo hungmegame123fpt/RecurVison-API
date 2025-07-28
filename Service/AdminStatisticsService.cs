@@ -211,6 +211,36 @@ namespace Service
 
             return result;
         }
+        public async Task<RevenueAnalyticsResponse> GetAnalyticsAsync()
+        {
+            var payments = await _unitOfWork.UserSubscriptionRepository.GetPaymentsInLast12MonthsAsync();
+            var activeSubs = await _unitOfWork.UserSubscriptionRepository.GetActiveSubscriptionCountAsync();
+
+            var grouped = payments
+                .GroupBy(p => new { p.LastPaymentDate.Value.Year, p.LastPaymentDate.Value.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .Select(g => new MonthlyRevenue
+                {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+                    Revenue = g.Sum(x => x.Plan.Price ?? 0)
+                }).ToList();
+
+            var totalRevenue = await _unitOfWork.UserSubscriptionRepository.GetTotalRevenueAsync();
+            var avgRevenue = payments.Any() ? totalRevenue / payments.Select(p => p.UserId).Distinct().Count() : 0;
+
+            decimal lastMonth = grouped.LastOrDefault()?.Revenue ?? 0;
+            decimal prevMonth = grouped.Count > 1 ? grouped[^2].Revenue : 0;
+            double monthlyGrowth = prevMonth > 0 ? (double)((lastMonth - prevMonth) / prevMonth) * 100 : 0;
+
+            return new RevenueAnalyticsResponse
+            {
+                TotalRevenue = totalRevenue,
+                MonthlyGrowth = Math.Round(monthlyGrowth, 2),
+                AvgRevenuePerUser = Math.Round(avgRevenue, 2),
+                ActiveSubscriptions = activeSubs,
+                MonthlyRevenueTrend = grouped
+            };
+        }
         public async Task<TimeSeriesAnalysisDto> GetInterviewSessionsAsync(DateTime from, DateTime to, string range)
         {
             var data = await _unitOfWork.VirtualInterviewRepository
@@ -325,10 +355,28 @@ namespace Service
                 Low = result.OrderBy(x => x.Count).FirstOrDefault()
             };
         }
+        public async Task<List<TopCustomerDTO>> GetTopCustomersAsync()
+        {
+            return await _unitOfWork.UserSubscriptionRepository.GetTopCustomersAsync();
+        }
     }
     public class WeekGroup
     {
         public int Week { get; set; }
         public List<DateTime> Dates { get; set; }
+    }
+    public class RevenueAnalyticsResponse
+    {
+        public decimal TotalRevenue { get; set; }
+        public double MonthlyGrowth { get; set; } 
+        public decimal AvgRevenuePerUser { get; set; }
+        public int ActiveSubscriptions { get; set; }
+        public List<MonthlyRevenue> MonthlyRevenueTrend { get; set; } = new();
+    }
+
+    public class MonthlyRevenue
+    {
+        public string Month { get; set; } = string.Empty; // "Jan 2024"
+        public decimal Revenue { get; set; }
     }
 }

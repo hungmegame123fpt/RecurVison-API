@@ -18,6 +18,8 @@ namespace Service.Interface
         Task<object> GetTotalCvFieldsAsync();
         Task<int> GetTotalInterviewsAsync();
         Task<int> GetInterviewsInProgressAsync();
+        Task<RevenueAnalyticsResponse> GetAnalyticsAsync();
+        Task<List<TopCustomerDTO>> GetTopCustomersAsync();
         //Task<List<JobField>> GetTopLikedJobsAsync(int top = 5);
         //Task<List<Course>> GetTopLikedCoursesAsync(int top = 5);
         //Task<List<object>> GetSubscriptionsOverTimeAsync();

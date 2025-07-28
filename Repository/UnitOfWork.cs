@@ -34,6 +34,7 @@ namespace Repository
         public IJobPostingRepository JobPostingRepository { get; set; }
         public IBlogPostRepository BlogPostRepository { get; set; }
         public IBlogCategoryRepository BlogCategoryRepository { get; set; }
+        public IFeedbackRepository FeedbackRepository { get; set; }
         public IBaseRepository<CvSkill> CvSkill { get; set; }
         public IBaseRepository<CvProject> CvProject { get; set; }
         public IBaseRepository<CvProjectTechStack> CvProjectTechStack { get; set; }
@@ -61,6 +62,7 @@ namespace Repository
 			JobPostingRepository = new JobPostingRepository(_db);
 			BlogPostRepository = new BlogPostRepository(_db);
 			BlogCategoryRepository = new BlogCategoryRepository(_db);
+			FeedbackRepository = new FeedbackRepository(_db);
             JobDescriptionRepository = new BaseRepository<JobDescription>(_db);
             CvSkill = new BaseRepository<CvSkill>(_db);
             CvCertification = new BaseRepository<CvCertification>(_db);

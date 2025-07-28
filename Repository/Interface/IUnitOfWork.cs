@@ -26,6 +26,7 @@ namespace Repository.Interface
 		IJobPostingRepository JobPostingRepository { get;  }
 		IBlogCategoryRepository BlogCategoryRepository { get;  }
 		IBlogPostRepository BlogPostRepository { get;  }
+		IFeedbackRepository FeedbackRepository { get;  }
         IBaseRepository<JobDescription> JobDescriptionRepository { get; }
         IBaseRepository<CvSkill> CvSkill { get; }
         IBaseRepository<CvCertification> CvCertification { get; }
