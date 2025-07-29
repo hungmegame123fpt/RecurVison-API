@@ -42,6 +42,7 @@ namespace Repository
         public IBaseRepository<CvEducation> CvEducation { get; set; }
         public IBaseRepository<JobDescription> JobDescriptionRepository { get; set; }
         public IBaseRepository<Author> AuthorRepository { get; set; }
+        public IBaseRepository<ContactMessage> ContactRepository { get; set; }
         public UnitOfWork(RecurVisionV1Context db, IConfiguration configuration)
         {
             _db = db;
@@ -70,6 +71,7 @@ namespace Repository
             CvEducation = new BaseRepository<CvEducation>(_db);
             CvProjectTechStack = new BaseRepository<CvProjectTechStack>(_db);
             AuthorRepository = new BaseRepository<Author>(_db);
+            ContactRepository = new BaseRepository<ContactMessage>(_db);
         }
         public async Task SaveChanges()
         {

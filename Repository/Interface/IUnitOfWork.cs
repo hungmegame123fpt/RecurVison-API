@@ -34,6 +34,7 @@ namespace Repository.Interface
         IBaseRepository<CvEducation> CvEducation { get; }
         IBaseRepository<CvProjectTechStack> CvProjectTechStack { get; }
         IBaseRepository<Author> AuthorRepository { get; }
+        IBaseRepository<ContactMessage> ContactRepository { get; }
 
         Task SaveChanges();
         Task<IDbContextTransaction> BeginTransactionAsync();

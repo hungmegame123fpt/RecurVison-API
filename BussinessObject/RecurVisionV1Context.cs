@@ -63,6 +63,7 @@ public partial class RecurVisionV1Context : DbContext
     public DbSet<BlogCategory> BlogCategories { get; set; }
     public DbSet<Author> Authors { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
+    public DbSet<ContactMessage> ContactMessages { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Server=tcp:recrudb.database.windows.net,1433;Initial Catalog=RecurVision_V1-2025-7-13-0-38;Persist Security Info=False;User ID=hung;Password=Thinhboro123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
@@ -837,6 +838,7 @@ public partial class RecurVisionV1Context : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__VIRTUAL_I__user___10566F31");
         });
+        modelBuilder.Entity<ContactMessage>().ToTable("ContactMessages");
         modelBuilder.Entity<CvAnalysisFile>(entity =>
         {
             entity.ToTable("CvAnalysisFiles");
