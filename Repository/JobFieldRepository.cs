@@ -70,5 +70,30 @@ namespace Repository
                 .Select(k => k.FieldName)
                 .FirstOrDefaultAsync();
         }
+        public async Task<int?> GetMatchingFieldIdAsync(string jobTitle)
+        {
+            if (string.IsNullOrWhiteSpace(jobTitle)) return null;
+
+            var jobFields = await GetAllAsync(f => f.IsActive && !string.IsNullOrEmpty(f.TypicalKeywords));
+
+            jobTitle = jobTitle.ToLower();
+            int maxMatch = 0;
+            JobField? bestMatch = null;
+
+            foreach (var field in jobFields)
+            {
+                var keywords = field.TypicalKeywords!.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(k => k.Trim().ToLower());
+
+                int matchCount = keywords.Count(k => jobTitle.Contains(k));
+                if (matchCount > maxMatch)
+                {
+                    maxMatch = matchCount;
+                    bestMatch = field;
+                }
+            }
+
+            return bestMatch?.FieldId;
+        }
     }
 }

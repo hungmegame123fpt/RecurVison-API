@@ -398,6 +398,7 @@ namespace Service
         public async Task UpdateUserProfileAsync(int userId, UpdateProfileRequest request)
         {
             var user = await _unitOfWork.UserRepository.GetByIdAsync(userId);
+            var fieldId = await _unitOfWork.JobFieldRepository.GetMatchingFieldIdAsync(request.Position);
             if (user == null) throw new Exception("User not found");
 
             user.FirstName = request.FirstName;
@@ -417,7 +418,7 @@ namespace Service
             latestJob.Location = request.Location;
             latestJob.CompanyName = request.Company;
             latestJob.JobPosition = request.Position;
-
+            latestJob.FieldId = fieldId;
             await _unitOfWork.UserRepository.UpdateAsync(user);
             await _unitOfWork.JobPostingRepository.UpdateAsync(latestJob);
             await _unitOfWork.SaveChanges();

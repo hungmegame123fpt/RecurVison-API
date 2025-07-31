@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.User;
+﻿using BusinessObject.DTO;
+using BusinessObject.DTO.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interface;
@@ -202,6 +203,17 @@ namespace RecurVison_API.Controllers
         {
             var result = await _statisticsService.GetTopCustomersAsync();
             return Ok(result);
+        }
+        [HttpGet("monthly-highlights")]
+        public async Task<IActionResult> GetMonthlyJobHighlights()
+        {
+            var result = await _statisticsService.GetMonthlyJobHighlightsAsync();
+            return Ok(new APIResponse<MonthlyJobHighlightDto>
+            {
+                Success = true,
+                Message = "Monthly job highlights fetched successfully.",
+                Data = result
+            });
         }
         private (DateTime from, DateTime to) GetDateRange(string range)
         {

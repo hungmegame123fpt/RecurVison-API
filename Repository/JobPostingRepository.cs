@@ -23,5 +23,10 @@ namespace Repository
                 .Include(j => j.JobField) 
                 .FirstOrDefaultAsync();
         }
+        public async Task<JobPosting?> GetByTitleAndCompanyAsync(string jobTitle, string companyName)
+        {
+            return await _db.JobPostings
+                .FirstOrDefaultAsync(j => j.JobPosition == jobTitle && j.CompanyName == companyName);
+        }
     }
 }

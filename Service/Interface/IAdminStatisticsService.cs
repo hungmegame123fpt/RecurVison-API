@@ -35,6 +35,7 @@ namespace Service.Interface
         Task<TimeSeriesAnalysisDto> GetInterviewSessionsAsync(DateTime from, DateTime to, string range);
         Task<PremiumConversionRateDto> GetPremiumConversionRateAsync();
         Task<List<ScoreHistogramBinDto>> GetUserScoreHistogramAsync();
+        Task<MonthlyJobHighlightDto> GetMonthlyJobHighlightsAsync();
 
     }
 }

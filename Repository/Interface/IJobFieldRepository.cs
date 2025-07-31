@@ -10,5 +10,6 @@ namespace Repository.Interface
     public interface IJobFieldRepository : IBaseRepository<JobField>
     {
         Task<string?> GetJobNameByIdAsync(int? id);
+        Task<int?> GetMatchingFieldIdAsync(string jobTitle);
     }
 }

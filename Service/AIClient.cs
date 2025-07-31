@@ -2,6 +2,7 @@
 using BusinessObject.DTO.AiClient;
 using BusinessObject.DTO.CV;
 using BusinessObject.Entities;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -240,7 +241,40 @@ namespace Service
                 await _unitOfWork.CareerPlanRepository.CreateAsync(plan);
                 await _unitOfWork.SaveChanges();
             }
+            var savedPostings = new List<JobPosting>();
 
+            foreach (var suggestion in aiResponse.Data.SuggestedJobs)
+            {
+                var existingJob = await _unitOfWork.JobPostingRepository
+                    .GetByTitleAndCompanyAsync(suggestion.JobTitle, suggestion.CompanyName);
+
+                if (existingJob != null)
+                {
+                    savedPostings.Add(existingJob);
+                    continue;
+                }
+
+                // Parse max salary from string, e.g. "1000-2000"
+                decimal? maxSalary = null;
+                if (decimal.TryParse(suggestion.SalaryRange?.Split('-').LastOrDefault(), out var parsedSalary))
+                    maxSalary = parsedSalary;
+                var fieldId = await _unitOfWork.JobFieldRepository.GetMatchingFieldIdAsync(suggestion.JobTitle);
+                var newJob = new JobPosting
+                {
+                    JobPosition = suggestion.JobTitle,
+                    CompanyName = suggestion.CompanyName,
+                    JobDescription = suggestion.Description,
+                    MaxSalary = maxSalary,
+                    DateSaved = DateTime.UtcNow,
+                    Status = "Suggested",
+                    FieldId = fieldId,
+                };
+
+                await _unitOfWork.JobPostingRepository.CreateAsync(newJob);
+                savedPostings.Add(newJob);
+            }
+
+            await _unitOfWork.SaveChanges();
             return new AiJobMatchingData
             {
                 SuggestedJobs = aiResponse?.Data.SuggestedJobs ?? new(),

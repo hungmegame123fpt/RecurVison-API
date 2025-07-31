@@ -7,7 +7,7 @@ public partial class JobPosting
 {
     public int JobId { get; set; }
 
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
     public int? FieldId { get; set; }
 
     public string? JobPosition { get; set; }

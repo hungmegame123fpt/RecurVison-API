@@ -355,6 +355,39 @@ namespace Service
                 Low = result.OrderBy(x => x.Count).FirstOrDefault()
             };
         }
+        public async Task<MonthlyJobHighlightDto> GetMonthlyJobHighlightsAsync()
+        {
+            var now = DateTime.UtcNow;
+            var firstDayOfMonth = new DateTime(now.Year, now.Month, 1);
+            var nextMonth = firstDayOfMonth.AddMonths(1);
+
+            var jobPostings = await _unitOfWork.JobPostingRepository.GetAllAsync(
+                filter: jp => jp.DateSaved >= firstDayOfMonth && jp.DateSaved < nextMonth,
+                includeProperties: "JobField"
+            );
+
+            // 1. Most Recommended
+            var mostRecommended = jobPostings
+                .Where(jp => jp.Status == "Suggested" && jp.FieldId != null)
+                .GroupBy(jp => jp.JobField.FieldName)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? "N/A";
+
+            // 2. Most Popular
+            var mostPopular = jobPostings
+                .Where(jp => jp.UserId != 0 && jp.FieldId != null)
+                .GroupBy(jp => jp.JobField.FieldName)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault() ?? "N/A";
+
+            return new MonthlyJobHighlightDto
+            {
+                MostRecommendedJob = mostRecommended,
+                MostPopularJob = mostPopular
+            };
+        }
         public async Task<List<TopCustomerDTO>> GetTopCustomersAsync()
         {
             return await _unitOfWork.UserSubscriptionRepository.GetTopCustomersAsync();
@@ -378,5 +411,10 @@ namespace Service
     {
         public string Month { get; set; } = string.Empty; // "Jan 2024"
         public decimal Revenue { get; set; }
+    }
+    public class MonthlyJobHighlightDto
+    {
+        public string MostRecommendedJob { get; set; } = "N/A";
+        public string MostPopularJob { get; set; } = "N/A";
     }
 }
