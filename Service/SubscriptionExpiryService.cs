@@ -57,6 +57,8 @@ namespace Service
                         _logger.LogInformation($"Reset quotas for {resetCount} subscriptions at {now}");
                         lastQuotaResetDate = now.Date;
                     }
+                    // 4. Ensure all users have at least a Free plan
+                    var addedFreeSubs = await subscriptionService.EnsureUsersHaveActiveSubscriptionAsync();
                 }
                 catch (Exception ex)
                 {
@@ -66,5 +68,6 @@ namespace Service
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
         }
+
     }
 }

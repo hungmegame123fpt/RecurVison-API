@@ -31,5 +31,6 @@ namespace Service.Interface
         Task<PremiumRateStatsDto> GetPremiumRateStatsAsync();
         Task<int> ResetUserQuotasAsync();
         Task<SubscriptionQuotaDto?> GetUserQuotaAsync(int userId);
+        Task<int> EnsureUsersHaveActiveSubscriptionAsync();
     }
 }

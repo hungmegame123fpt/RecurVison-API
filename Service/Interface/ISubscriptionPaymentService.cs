@@ -18,5 +18,6 @@ namespace Service.Interface
         Task<decimal> GetTotalRevenueAsync();
         Task<IEnumerable<UserSubscription>> GetExpiringSubscriptionsAsync(int daysFromNow);
         Task<Dictionary<string, int>> GetSubscriptionStatsAsync();
+        
     }
 }

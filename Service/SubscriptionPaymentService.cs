@@ -199,7 +199,6 @@ namespace Service
         {
             return await _unitOfWork.UserSubscriptionRepository.GetUserActiveSubscriptionAsync(userId);
         }
-
         public async Task<bool> CancelSubscriptionAsync(int subscriptionId)
         {
               var result =  await _unitOfWork.UserSubscriptionRepository.CancelSubscriptionAsync(subscriptionId);
@@ -280,6 +279,7 @@ namespace Service
                 "quarterly" => startDate.AddMonths(3),
                 "yearly" => startDate.AddYears(1),
                 "weekly" => startDate.AddDays(7),
+                "one-time" => startDate.AddDays(1),
                 _ => startDate.AddMonths(1) // Default to monthly
             };
         }

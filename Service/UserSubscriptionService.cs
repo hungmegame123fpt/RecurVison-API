@@ -321,6 +321,55 @@ namespace Service
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
             return userIdClaim != null ? int.Parse(userIdClaim.Value) : (int?)null;
         }
+        public async Task<int> EnsureUsersHaveActiveSubscriptionAsync()
+        {
+            // 1. Lấy tất cả userId có subscription đang hoạt động
+            var usersWithActiveSubs = await _unitOfWork.UserSubscriptionRepository
+                .GetAllAsync(s => s.EndDate >= DateTime.UtcNow, null);
+
+            var activeUserIds = usersWithActiveSubs
+                .Where(s => s.UserId.HasValue && s.PaymentStatus.Contains("ACTIVE"))
+                .Select(s => s.UserId!.Value)
+                .ToHashSet();
+
+            // 2. Lấy tất cả user chưa có subscription đang hoạt động
+            var allUsers = await _unitOfWork.UserRepository.GetAllAsync(false);
+            var usersWithoutActiveSubs = allUsers
+                .Where(u => !activeUserIds.Contains(u.UserId))
+                .ToList();
+
+            if (!usersWithoutActiveSubs.Any())
+                return 0;
+
+            // 3. Tìm Plan Free
+            var freePlan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(15);
+
+            if (freePlan == null)
+                throw new Exception("Free subscription plan not found");
+
+            // 4. Tạo subscription Free cho những user còn thiếu
+            foreach (var user in usersWithoutActiveSubs)
+            {
+                var newSub = new UserSubscription
+                {
+                    UserId = user.UserId,
+                    PlanId = freePlan.PlanId,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = DateTime.UtcNow.AddYears(100),
+                    IsAutoRenew = false,
+                    PaymentStatus = "ACTIVE",
+                    InterviewPerDayRemaining = freePlan.MaxTextInterviewPerDay,
+                    VoiceInterviewRemaining = freePlan.MaxVoiceInterviewPerMonth,
+                    CvRemaining = freePlan.MaxCvsAllowed,
+                    LastQuotaResetDate = DateTime.UtcNow
+                };
+
+                await _unitOfWork.UserSubscriptionRepository.CreateAsync(newSub);
+            }
+
+            await _unitOfWork.SaveChanges();
+            return usersWithoutActiveSubs.Count;
+        }
         private PremiumRateDetail CalculateRate(IEnumerable<User> users, List<int?> premiumUserIds)
         {
             var total = users.Count();
