@@ -88,7 +88,7 @@ namespace Service.Interface
                 return false;
             }
 
-            user.AccountStatus = "Activated";
+            user.AccountStatus = "Active";
             await _userRepository.UpdateAsync(user);
 
             _logger.LogInformation("User {UserId} activated successfully", userId);
