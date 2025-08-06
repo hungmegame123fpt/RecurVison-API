@@ -288,15 +288,15 @@ namespace Service
             var bins = new List<ScoreHistogramBinDto>();
             for (decimal i = 0; i < 1; i += 0.05m)
             {
-                decimal min = i;
-                decimal max = i + 0.05m;
+                decimal min = Math.Round(i, 2);
+                decimal max = Math.Round(i + 0.05m, 2);
 
                 var count = interviews.Count(iw =>
                     iw.OverallScore >= min && iw.OverallScore < max);
 
                 bins.Add(new ScoreHistogramBinDto
                 {
-                    Range = $"{min:F1}-{max:F1}",
+                    Range = $"{min:F2}-{max:F2}",
                     Count = count
                 });
             }
