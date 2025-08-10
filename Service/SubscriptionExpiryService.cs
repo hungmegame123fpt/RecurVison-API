@@ -65,7 +65,7 @@ namespace Service
                     _logger.LogError(ex, "Error occurred in background task.");
                 }
 
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromDays(1), stoppingToken);
             }
         }
 
