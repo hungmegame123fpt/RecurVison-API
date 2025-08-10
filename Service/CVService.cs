@@ -696,9 +696,10 @@ namespace Service
                 throw new InvalidOperationException($"Failed to edit PDF: {ex.Message}", ex);
             }
         }
-        public async Task<string?> CategorizeCvByFieldAsync(int cvId, string plainTextContent)
+        public async Task<string?> CategorizeCvByFieldAsync(int cvId)
         {
-             var fieldId = await _unitOfWork.CVRepository.CategorizeCvByFieldAsync(cvId, plainTextContent);
+            var cvVersion = await _unitOfWork.CVRepository.GetLatestVersionAsync(cvId);
+             var fieldId = await _unitOfWork.CVRepository.CategorizeCvByFieldAsync(cvId, cvVersion.PlainText);
             var result =  await _unitOfWork.JobFieldRepository.GetJobNameByIdAsync(fieldId);
             return result;
         }

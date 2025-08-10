@@ -237,9 +237,9 @@ namespace RecurVison_API.Controllers
         }
         
         [HttpGet("JobField")]
-        public async Task<ActionResult<string?>> CategorizeCvByFieldAsync(int cvId, string plainTextContent)
+        public async Task<ActionResult<string?>> CategorizeCvByFieldAsync(int cvId)
         {
-            var result = await _cvService.CategorizeCvByFieldAsync(cvId, plainTextContent);
+            var result = await _cvService.CategorizeCvByFieldAsync(cvId);
             return Ok(result);
         }
     }
