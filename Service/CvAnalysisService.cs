@@ -44,6 +44,30 @@ namespace Service
                 Certifications = result.Certifications
             };
         }
+        public async Task<CvAnalysisResultDto?> GetAnalysisById(int id)
+        {
+            var result = await _unitOfWork.CvAnalysisResult.GetByIdAsync(id);
+            var cv = await _unitOfWork.CVRepository.GetByIdAsync(result.CvId);
+            return new CvAnalysisResultDto
+            {
+                Id = result.Id,
+                Name = result.Name,
+                Email = result.Email,
+                Phone = result.Phone,
+                Summary = result.Summary,
+                JobDescriptionId = result.JobDescriptionId,
+                MatchScore = result.MatchScore,
+                CvId = result.CvId,
+                CreatedAt = result.CreatedAt,
+                JdAlignment = result.JdAlignment,
+                CvUrl = cv.FilePath,
+                JobDescription = result.JobDescription,
+                Skills = result.Skills,
+                Education = result.Education,
+                Projects = result.Projects,
+                Certifications = result.Certifications
+            };
+        }
         public async Task<List<CvAnalysisSummaryDto>> GetAnalysisSummariesAsync(int userId)
         {
             var results = await _unitOfWork.CvAnalysisResult

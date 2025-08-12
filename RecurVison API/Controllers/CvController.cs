@@ -105,6 +105,20 @@ namespace RecurVison_API.Controllers
 
             return Ok(result);
         }
+        [HttpGet("analysis/{id}")]
+        [ProducesResponseType(typeof(CvAnalysisResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAnalysisById(int id)
+        {
+            var result = await _analysisService.GetAnalysisById(id);
+
+            if (result == null)
+            {
+                return NotFound($"No analysis with ID {id}");
+            }
+
+            return Ok(result);
+        }
         [HttpPost("cv-version/{cvVersionId}/upload-analysis")]
         public async Task<IActionResult> UploadCvAnalysisJson([FromForm] CvAnalysisRequest request)
         {

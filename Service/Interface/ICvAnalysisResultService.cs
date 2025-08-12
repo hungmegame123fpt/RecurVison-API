@@ -11,6 +11,7 @@ namespace Service.Interface
     public interface  ICvAnalysisResultService
     {
         Task<CvAnalysisResultDto?> GetLatestAnalysisByCvIdAsync(int cvId);
+        Task<CvAnalysisResultDto?> GetAnalysisById(int id);
         Task<List<CvAnalysisSummaryDto>> GetAnalysisSummariesAsync(int userId);
     }
 }
