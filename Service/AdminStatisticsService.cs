@@ -175,7 +175,7 @@ namespace Service
 
             var stats = allPlans.Select(plan =>
             {
-                var planSubs = allSubs.Where(sub => sub.PlanId == plan.PlanId);
+                var planSubs = allSubs.Where(sub => sub.PlanId == plan.PlanId && plan.PlanId !=15);
 
                 return new
                 {
