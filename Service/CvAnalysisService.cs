@@ -46,7 +46,7 @@ namespace Service
         }
         public async Task<CvAnalysisResultDto?> GetAnalysisById(int id)
         {
-            var result = await _unitOfWork.CvAnalysisResult.GetByIdAsync(id);
+            var result = await _unitOfWork.CvAnalysisResult.GetById(id);
             var cv = await _unitOfWork.CVRepository.GetByIdAsync(result.CvId);
             return new CvAnalysisResultDto
             {

@@ -27,6 +27,17 @@ namespace Repository
                 .OrderByDescending(r => r.CreatedAt)
                 .FirstOrDefaultAsync();
         }
+        public async Task<CvAnalysisResult?> GetById(int id)
+        {
+            return await _db.CvAnalysisResults
+                .Where(r => r.Id == id)
+                .Include(r => r.Skills)
+                .Include(r => r.Education)
+                .Include(r => r.Projects).ThenInclude(p => p.TechStacks)
+                .Include(r => r.Certifications)
+                .OrderByDescending(r => r.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
         public async Task<int> GetCvsAnalyzedThisMonthAsync(int userId)
         {
             var now = DateTime.UtcNow;
