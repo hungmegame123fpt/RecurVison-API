@@ -202,7 +202,8 @@ namespace Service
 				throw new Exception("Failed to analyze CV via AI");
 
 			var analysisData = aiResponse.Data.CvAnalysisResult;
-
+            var cvVersion = await _unitOfWork.CVRepository.GetLatestVersionAsync(cv.CvId);
+            var fieldId = await _unitOfWork.CVRepository.CategorizeCvByFieldAsync(cv.CvId, cvVersion.PlainText);
             // 4. Map AI response to your CvAnalysisResult entity
             var result = new CvAnalysisResult
             {
@@ -258,6 +259,7 @@ namespace Service
 
             // 5. Save to DB
             await _unitOfWork.CvAnalysisResult.CreateAsync(result);
+            cv.FieldId = fieldId;
 			await _unitOfWork.CvAnalysisResult.SaveChangesAsync();
 
 			return result;
